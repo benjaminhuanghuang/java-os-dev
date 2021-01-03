@@ -49,6 +49,6 @@ fin:
 
 msg:
     DB    0x0a,  0x0a
-    db    "hello, world"
+    db    "hello, world from my OS"
     db    0x0a
     db    0

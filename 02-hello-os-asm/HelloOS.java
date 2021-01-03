@@ -25,19 +25,21 @@ public class HelloOS {
             e.printStackTrace();
             return;
         }
-
-        imgByteToWrite.add(0x55);
-        imgByteToWrite.add(0xaa);
-        imgByteToWrite.add(0xf0);
-        imgByteToWrite.add(0xff);
-        imgByteToWrite.add(0xff);
     }
 
-    public HelloOS(String s) {
+    public HelloOS() {
         readKernelFromFile("boot.bin");
-
-        int len = 0x168000;  // = 1474560
+        
+        int len = 0x1fe; // = 510
         int curSize = imgByteToWrite.size();
+        for (int k = 0; k < len - curSize; k++) {
+            imgByteToWrite.add(0);
+        }
+        imgByteToWrite.add(0x55);
+        imgByteToWrite.add(0xaa);
+
+        len = 0x168000;  // = 1474560
+        curSize = imgByteToWrite.size();
         for (int l = 0; l < len - curSize; l++) {
             imgByteToWrite.add(0);
         }
@@ -59,7 +61,7 @@ public class HelloOS {
     }
 
     public static void main(String[] args) {
-        HelloOS op = new HelloOS("hello, this is my os by ASM");
+        HelloOS op = new HelloOS();
         op.makeFllopy();
     }
 }

@@ -5,8 +5,7 @@ HelloOS : HelloOS.java Makefile
 	javac HelloOS.java
 
 boot.bin : boot.asm Makefile
-	nasm boot.asm -o boot.bin
-
+	nasm -o boot.bin boot.asm
 
 myos.img : HelloOS boot.bin Makefile
 	java HelloOS
