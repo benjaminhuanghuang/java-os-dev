@@ -12,4 +12,6 @@ run :
 	qemu-system-i386 -fda myos.img -boot a
 
 clean:
-	rm HelloOS
+	rm *.class
+	rm *.img
+	
