@@ -1,0 +1,15 @@
+default :
+	make foobar
+
+
+bar.o : bar.c Makefile
+	gcc -m32 -fno-asynchronous-unwind-tables -s -c -o bar.o bar.c
+
+bar.asm
+	../objconv -fnasm bar.o -o bar.asm
+
+foo.o : foo.asm Makefile
+	nasm foo.asm -f elf32 -o foo.o
+
+foobar : foo.o bar.o Makefile
+	gcc -m32 foo.o -o foo

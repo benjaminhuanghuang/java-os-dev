@@ -6,7 +6,7 @@ arg1  dd 3
 arg2  dd 4
 
 [section .text]
-global _start
+global main
 global foo_print
 
 main:
