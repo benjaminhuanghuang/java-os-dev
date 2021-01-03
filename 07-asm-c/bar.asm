@@ -5,10 +5,6 @@
 ; Instruction set: 80386
 
 
-global _bar_func
-
-extern _foo_print                                       ; near
-
 
 SECTION ._TEXT.__text align=16 execute                  ; section number 1, code
 
