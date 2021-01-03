@@ -5,7 +5,7 @@ org   0x9000
 jmp   LABEL_BEGIN
 
 [SECTION .gdt]
- ;                                  段基址          段界限                属性
+;                                  段基址          段界限                属性
 LABEL_GDT:          Descriptor        0,            0,                   0  
 LABEL_DESC_CODE32:  Descriptor        0,      SegCode32Len - 1,       DA_C + DA_32
 LABEL_DESC_VIDEO:   Descriptor        0B8000h,         0ffffh,            DA_DRW
@@ -76,7 +76,8 @@ LABEL_BEGIN:
 
      [SECTION .s32]
      [BITS  32]
-     LABEL_SEG_CODE32:
+
+LABEL_SEG_CODE32:
      ;initialize stack for c code
      mov  ax, SelectorStack
      mov  ss, ax
@@ -86,10 +87,10 @@ LABEL_BEGIN:
      mov  ds,  ax
 
 C_CODE_ENTRY:
-     #%include "write_vga.asm"
+     %include "write_vga.asm"
 
 
-io_hlt:  ;void io_hlt(void);
+_io_hlt:  ;void io_hlt(void);
       HLT
       RET
 
@@ -99,5 +100,5 @@ SegCode32Len   equ  $ - LABEL_SEG_CODE32
 ALIGN 32
 [BITS 32]
 LABEL_STACK:
-times 512  db 0
+     times 512  db 0
 TopOfStack  equ  $ - LABEL_STACK

@@ -8,7 +8,7 @@ void CMain(void)
   for (i = 0xa0000; i <= 0xaffff; i++)
   {
     p = (char*)i;
-    *p = i & 0x0f;
+    *p = i & 0xf;
   }
 
   for (;;)
