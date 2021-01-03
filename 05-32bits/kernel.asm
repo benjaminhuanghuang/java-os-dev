@@ -79,7 +79,7 @@ showChar:
     jmp    showChar
 end: 
     jmp   $
-    msg:
+msg:
     DB     "Protect Mode", 0
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32

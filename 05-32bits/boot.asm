@@ -1,6 +1,6 @@
 org  0x7c00;
 
-LOAD_ADDR  EQU  0X8000
+LOAD_ADDR  EQU  0X9000
 
 entry:
     mov  ax, 0
