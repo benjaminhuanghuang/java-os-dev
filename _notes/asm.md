@@ -3,6 +3,8 @@
 
 ## C cal ASM function
 
+根据C语言的调用规定，如果函数有返回值，那么返回值必须存储在寄存器al,ah, 或ax, eax中，所以大家可以发现，io_in8 或相关的调用，从端口读出的数据都会被存储到寄存器al, 或ax中。
+
 
 
 ## ASM call C function

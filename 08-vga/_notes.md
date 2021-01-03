@@ -1,3 +1,4 @@
+
 # Hello OS
 [利用C语言绘制操作系统图像界面](https://blog.csdn.net/tyler_download/article/details/52523237)
 
@@ -22,3 +23,12 @@ int  0x10
 我们采用的是0x13模式，其中320*200*8 中，最后的数值8表示的是色彩值得位数，也就是我们可以用8位数值表示色彩，总共可以显示256种色彩。
 
 系统显存的地址是0x000a0000，当我们执行上面几句代码后，向显存地址写入数据，屏幕就会出现相应的变化了
+
+## Boot loader
+  注意本节 kernel 代码大于 512 K， 因此需要修改boot.asm 加载 2 个扇区
+
+## ASM code call C code
+  C -> obj -> asm -> include into kernel.asm
+
+
+## ASM code setup stack for C code 

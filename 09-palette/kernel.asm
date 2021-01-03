@@ -87,12 +87,60 @@ LABEL_SEG_CODE32:
      mov  ds,  ax
 
 C_CODE_ENTRY:
-     %include "write_vga.asm"
+     %include "os.asm"
 
 
 _io_hlt:  ;void io_hlt(void);
       HLT
       RET
+
+_io_in8:
+      mov  edx, [esp + 4]
+      mov  eax, 0
+      in   al, dx
+
+_io_in16:
+      mov  edx, [esp + 4]
+      mov  eax, 0
+      in   ax, dx
+
+ _io_in32:
+      mov edx, [esp + 4]
+      in  eax, dx
+      ret
+
+_io_out8:
+       mov edx, [esp + 4]
+       mov al, [esp + 8]
+       out dx, al
+       ret
+
+_io_out16:
+       mov edx, [esp + 4]
+       mov eax, [esp + 8]
+       out dx, ax
+       ret
+
+_io_out32:
+        mov edx, [esp + 4]
+        mov eax, [esp + 8]
+        out dx, eax
+        ret
+
+_io_cli:
+      CLI
+      RET
+
+_io_load_eflags:
+        pushfd
+        pop  eax
+        ret
+
+_io_store_eflags:
+        mov eax, [esp + 4]
+        push eax
+        popfd
+        ret
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32
 
