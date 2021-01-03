@@ -1,3 +1,5 @@
+extern void io_hlt(void);
+
 void CMain(void)
 {
   int i;
@@ -5,7 +7,7 @@ void CMain(void)
   // 0xa0000 is the start of vga in memory
   for (i = 0xa0000; i <= 0xaffff; i++)
   {
-    p = i;
+    p = (char*)i;
     *p = i & 0x0f;
   }
 

@@ -3,6 +3,8 @@
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=8
 
+https://blog.csdn.net/qq_31567335/article/details/100600709
+
 
 
 由字符模式转入图形模式，需要向显卡发送命令，让其进入图形显示模式，操作硬件需要使用BIOS调用，以下几行就是打开VGA显卡色彩功能的代码：

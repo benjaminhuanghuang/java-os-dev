@@ -6,10 +6,10 @@ HelloOS : HelloOS.java Makefile
 
 
 write_vga.o : write_vga.c Makefile
-	gcc -m32 -fno-asynchronous-unwind-tables -s -c -o write_vga.o write_vga.c
+	gcc -m32 -fno-asynchronous-unwind-tables -c -o write_vga.o write_vga.c
 
 write_vga1.asm : write_vga.o Makefile
-	../objconv -fnasm write_vag1.asm write_vag.o
+	../objconv -fnasm write_vga.o write_vag1.asm
 
 write_vga.asm : write_vga1.asm Makefile
 	cat write_vga1.asm | sed -e '/^SECTION:/d' > write_vga.asm && \
@@ -30,3 +30,4 @@ clean:
 	rm *.class
 	rm *.bin
 	rm *.img
+	rm *.objconv

@@ -86,10 +86,10 @@ LABEL_BEGIN:
      mov  ds,  ax
 
 C_CODE_ENTRY:
-     %include "write_vga.asm"
+     #%include "write_vga.asm"
 
 
-     io_hlt:  ;void io_hlt(void);
+io_hlt:  ;void io_hlt(void);
       HLT
       RET
 

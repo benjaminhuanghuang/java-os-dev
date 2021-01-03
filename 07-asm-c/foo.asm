@@ -6,10 +6,10 @@ arg1  dd 3
 arg2  dd 4
 
 [section .text]
-global main
+global _start
 global foo_print
 
-main:
+_start:
   mov   eax, dword[arg1]
   push  eax
   mov   eax, dword [arg2]
@@ -28,5 +28,3 @@ foo_print:
   mov   eax, 4
   int   0x80
   ret
-
-%include "bar.asm"
