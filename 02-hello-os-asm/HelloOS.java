@@ -49,9 +49,9 @@ public class HelloOS {
         Create a 1474560 bytes binary file
         Write imgContent to the start 512 bytes
     */
-    public void makeFllopy()   {
+    public void makeFloppy(String floppyName)   {
         try {
-            DataOutputStream out = new DataOutputStream(new FileOutputStream("myos.img"));
+            DataOutputStream out = new DataOutputStream(new FileOutputStream(floppyName));
             for (int i = 0; i < imgByteToWrite.size(); i++) {
                 out.writeByte(imgByteToWrite.get(i).byteValue());
             }
@@ -62,6 +62,6 @@ public class HelloOS {
 
     public static void main(String[] args) {
         HelloOS op = new HelloOS();
-        op.makeFllopy();
+        op.makeFloppy("myos.img");
     }
 }
