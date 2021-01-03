@@ -32,7 +32,7 @@ public class HelloOS {
         }
         imgByteToWrite.add(0x0a);
 
-        int len = 0x1fe;
+        int len = 0x1fe; // = 510
         int curSize = imgByteToWrite.size();
         for (int k = 0; k < len - curSize; k++) {
             imgByteToWrite.add(0);
@@ -46,14 +46,17 @@ public class HelloOS {
         imgByteToWrite.add(0xff);
         imgByteToWrite.add(0xff);
 
-        len = 0x168000;
+        len = 0x168000;  // = 1474560
         curSize = imgByteToWrite.size();
         for (int l = 0; l < len - curSize; l++) {
             imgByteToWrite.add(0);
         }
-
     }
 
+    /*
+        Create a 1474560 bytes binary file
+        Write imgContent to the start 512 bytes
+    */
     public void makeFllopy()   {
         try {
             DataOutputStream out = new DataOutputStream(new FileOutputStream("myos.img"));
@@ -61,10 +64,8 @@ public class HelloOS {
                 out.writeByte(imgByteToWrite.get(i).byteValue());
             }
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
 
     public static void main(String[] args) {
