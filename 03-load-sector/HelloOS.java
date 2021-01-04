@@ -57,6 +57,6 @@ public class HelloOS {
 
     public static void main(String[] args) {
         HelloOS op = new HelloOS("boot.bin");
-        op.makeFloppy("myos.img");
+        op.makeFloppy("myos03.img");
     }
 }

@@ -3,7 +3,18 @@
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=3
 
+用汇编语言写一个程序，编译成bin，
 
+Java代码把bin写入image的起始512字节，这512字节的剩余部分补0，并以55AA结尾
+
+Java代码还会把一个 string 写入到image的cylinder 1, sector 2， 汇编代码会把这个string从image读入内存并显示
+```
+  String s = "This is a text from cylinder 1 and sector 2";
+  floppyDisk.writeFloppy(Floppy.MAGNETIC_HEAD.MAGNETIC_HEAD_0, 1, 2, s.getBytes());
+```
+
+
+## ASM
 读取软盘的汇编代码
 ```
 mov CH, 1 ;CH 用来存储柱面号
