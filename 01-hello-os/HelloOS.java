@@ -20,15 +20,15 @@ public class HelloOS {
 
     private ArrayList<Integer> imgByteToWrite = new ArrayList<Integer>();
 
-    public HelloOS(String s) {
+    public HelloOS(String message) {
         for (int i = 0; i < imgContent.length; i++) {
             imgByteToWrite.add(imgContent[i]);
         }
-
+        // 0x0a is new line
+        imgByteToWrite.add(0x0a);   
         imgByteToWrite.add(0x0a);
-        imgByteToWrite.add(0x0a);
-        for (int j = 0; j < s.length(); j++) {
-            imgByteToWrite.add((int)s.charAt(j));
+        for (int j = 0; j < message.length(); j++) {
+            imgByteToWrite.add((int)message.charAt(j));
         }
         imgByteToWrite.add(0x0a);
 
@@ -38,10 +38,10 @@ public class HelloOS {
             imgByteToWrite.add(0);
         }
 
-        //0x1fe-0x1f: 0x55, 0xaa
-        //0x200-0x203: f0 ff  ff
+        //0x1fe-0x1ff: 0x55, 0xaa
         imgByteToWrite.add(0x55);
         imgByteToWrite.add(0xaa);
+        //0x200-0x203: f0 ff  ff
         imgByteToWrite.add(0xf0);
         imgByteToWrite.add(0xff);
         imgByteToWrite.add(0xff);
@@ -59,10 +59,11 @@ public class HelloOS {
     */
     public void makeFllopy()   {
         try {
-            DataOutputStream out = new DataOutputStream(new FileOutputStream("myos.img"));
+            DataOutputStream out = new DataOutputStream(new FileOutputStream("myos01.img"));
             for (int i = 0; i < imgByteToWrite.size(); i++) {
                 out.writeByte(imgByteToWrite.get(i).byteValue());
             }
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -9,18 +9,17 @@ import java.util.ArrayList;
 
 
 public class HelloOS {
-    private ArrayList<Integer> imgByteToWrite = new ArrayList<Integer>();
+    private ArrayList<Char> imgByteToWrite = new ArrayList<Char>();
 
     private void readKernelFromFile(String fileName) {
-        File file = new File(fileName);
-        InputStream in = null;
-
         try {
-            in = new FileInputStream(file);
+            File file = new File(fileName);
+            InputStream in = new FileInputStream(file);
             int tempbyte;
             while ((tempbyte = in.read()) != -1) {
                 imgByteToWrite.add(tempbyte);
             }
+            in.close();
         } catch(IOException e) {
             e.printStackTrace();
             return;
@@ -32,6 +31,7 @@ public class HelloOS {
         
         int len = 0x1fe; // = 510
         int curSize = imgByteToWrite.size();
+        // fill 0
         for (int k = 0; k < len - curSize; k++) {
             imgByteToWrite.add(0);
         }
@@ -40,6 +40,7 @@ public class HelloOS {
 
         len = 0x168000;  // = 1474560
         curSize = imgByteToWrite.size();
+        // fill 0
         for (int l = 0; l < len - curSize; l++) {
             imgByteToWrite.add(0);
         }
@@ -55,6 +56,7 @@ public class HelloOS {
             for (int i = 0; i < imgByteToWrite.size(); i++) {
                 out.writeByte(imgByteToWrite.get(i).byteValue());
             }
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -62,6 +64,6 @@ public class HelloOS {
 
     public static void main(String[] args) {
         HelloOS op = new HelloOS();
-        op.makeFloppy("myos.img");
+        op.makeFloppy("myos02.img");
     }
 }

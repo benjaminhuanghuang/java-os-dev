@@ -9,7 +9,7 @@ myos.img : HelloOS Makefile
 
 run :
 	$(MAKE) myos.img
-	qemu-system-i386 -fda myos.img -boot a
+	qemu-system-i386 -fda myos01.img -boot a
 
 clean:
 	rm *.class
