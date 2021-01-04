@@ -13,6 +13,12 @@ Java代码还会把一个 string 写入到image的cylinder 1, sector 2， 汇编
   floppyDisk.writeFloppy(Floppy.MAGNETIC_HEAD.MAGNETIC_HEAD_0, 1, 2, s.getBytes());
 ```
 
+1张软盘有80个柱面，2个磁头，18个扇区，且一个扇区有512字节。所以，一张软盘的容量是：
+```
+  2880 个扇区 80×2×18×512=1474560 Byte = 1440KB
+```
+含有IPL的启动区，位于C0-H0-S1（柱面0，磁头0，扇区1的缩写），下一个扇区是C0-H0-S2
+
 
 ## ASM
 读取软盘的汇编代码
