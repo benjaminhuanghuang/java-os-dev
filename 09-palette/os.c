@@ -25,7 +25,7 @@ struct  BOOTINFO {
     char* vgaRam;
     short screenX, screenY;
 };
-
+void initBootInfo(struct BOOTINFO *pBootInfo);
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned char *varm, 
