@@ -8,22 +8,22 @@ default :
 %.bin : %.asm Makefile
 	nasm $*.asm -f bin -o $*.bin
 
-write_vga.o : write_vga.c Makefile
-	gcc -m32 -fno-asynchronous-unwind-tables -c -o write_vga.o write_vga.c
+os.o : os.c Makefile
+	gcc -m32 -fno-asynchronous-unwind-tables -c -o os.o os.c
 
-write_vga1.asm : write_vga.o Makefile
-	../objconv -fnasm write_vga.o write_vga1.asm
+os1.asm : os.o Makefile
+	../objconv -fnasm os.o so1.asm
 
 # remove the SECTION, global, extern... 
-write_vga.asm : write_vga1.asm Makefile
-	cat write_vga1.asm | sed -e '/^SECTION/d' | sed -e '/^global/d' | sed -e '/^extern/d' > write_vga.asm
+os.asm : os1.asm Makefile
+	cat os1.asm | sed -e '/^SECTION/d' | sed -e '/^global/d' | sed -e '/^extern/d' > os.asm
 
-kernel.bin : kernel.asm write_vga.asm write_vga.c Makefile
+kernel.bin : kernel.asm os.asm Makefile
 	nasm kernel.asm -f bin -o kernel.bin
 
 myos.img : kernel.bin boot.bin Makefile
-	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) $(KERNEL_NAME)
-
+	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) "" &&\
+	mcopy -i $(IMAGE_NAME) $(KERNEL_NAME) ::$(KERNEL_NAME)
 
 run :
 	make myos.img

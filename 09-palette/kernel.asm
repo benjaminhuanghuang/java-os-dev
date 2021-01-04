@@ -1,6 +1,6 @@
 %include "pm.inc"
 
-org 0x9000
+org 0x8000
 
 VRAM_ADDRESS equ 0x000a0000
 
