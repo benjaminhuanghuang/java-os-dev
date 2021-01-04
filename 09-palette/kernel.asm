@@ -1,152 +1,156 @@
 %include "pm.inc"
 
-org   0x9000
+org 0x9000
 
-jmp   LABEL_BEGIN
+VRAM_ADDRESS equ 0x000a0000
+
+jmp LABEL_BEGIN
 
 [SECTION .gdt]
-;                                  段基址          段界限                属性
-LABEL_GDT:          Descriptor        0,            0,                   0  
-LABEL_DESC_CODE32:  Descriptor        0,      SegCode32Len - 1,       DA_C + DA_32
-LABEL_DESC_VIDEO:   Descriptor        0B8000h,         0ffffh,            DA_DRW
-LABEL_DESC_VRAM:    Descriptor        0,         0ffffffffh,            DA_DRW
-LABEL_DESC_STACK:   Descriptor        0,             TopOfStack,        DA_DRWA+DA_32
-
-GdtLen     equ    $ - LABEL_GDT
-GdtPtr     dw     GdtLen - 1
-           dd     0
-
-SelectorCode32    equ   LABEL_DESC_CODE32 -  LABEL_GDT
-SelectorVideo     equ   LABEL_DESC_VIDEO  -  LABEL_GDT
-SelectorStack     equ   LABEL_DESC_STACK  -  LABEL_GDT
-SelectorVram      equ   LABEL_DESC_VRAM   -  LABEL_GDT
+;                               段基址      段界限              属性
+LABEL_GDT:          Descriptor      0,          0,              0
+LABEL_DESC_CODE32:  Descriptor      0,          SegCode32Len-1, DA_C+DA_32
+LABEL_DESC_VIDEO:   Descriptor      0B8000h,    0ffffh,         DA_DRW
+LABEL_DESC_VRAM:    Descriptor      0,          0ffffffffh,     DA_DRW
+LABEL_DESC_STACK:   Descriptor      0,          TopOfStack,     DA_DRWA+DA_32
 
 
-[SECTION  .s16]
-[BITS  16]
+GdtLen  equ $ - LABEL_GDT
+GdtPtr  dw  GdtLen - 1
+        dd  0
+
+SelectorCode32  equ LABEL_DESC_CODE32 - LABEL_GDT
+SelectorVideo   equ LABEL_DESC_VIDEO - LABEL_GDT
+SelectorStack   equ LABEL_DESC_STACK - LABEL_GDT
+SelectorVram    equ LABEL_DESC_VRAM - LABEL_GDT
+
+[SECTION .s16]
+[BITS 16]
 LABEL_BEGIN:
-     mov   ax, cs
-     mov   ds, ax
-     mov   es, ax
-     mov   ss, ax
-     mov   sp, 0100h
+    mov ax, cs
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov sp, 0100h
 
-     mov   al, 0x13
-     mov   ah, 0
-     int   0x10
+    ; 设置显卡的工作模式
+    mov al, 0x13
+    mov ah, 0
+    int 0x10
 
-     xor   eax, eax
-     mov   ax,  cs
-     shl   eax, 4
-     add   eax, LABEL_SEG_CODE32
-     mov   word [LABEL_DESC_CODE32 + 2], ax
-     shr   eax, 16
-     mov   byte [LABEL_DESC_CODE32 + 4], al
-     mov   byte [LABEL_DESC_CODE32 + 7], ah
+    xor eax, eax
+    mov ax, cs
+    shl eax, 4
+    add eax, LABEL_SEG_CODE32
+    mov word [LABEL_DESC_CODE32 + 2], ax
+    shr eax, 16
+    mov byte [LABEL_DESC_CODE32 + 4], al
+    mov byte [LABEL_DESC_CODE32 + 7], ah
 
-;set stack for C language
-     xor   eax, eax
-     mov   ax,  cs
-     shl   eax, 4
-     add   eax, LABEL_STACK
-     mov   word [LABEL_DESC_STACK + 2], ax
-     shr   eax, 16
-     mov   byte [LABEL_DESC_STACK + 4], al
-     mov   byte [LABEL_DESC_STACK + 7], ah
+    xor eax, eax
+    mov ax, ds
+    shl eax, 4
+    add eax, LABEL_GDT
+    mov dword [GdtPtr + 2], eax
 
-     xor   eax, eax
-     mov   ax, ds
-     shl   eax, 4
-     add   eax,  LABEL_GDT
-     mov   dword  [GdtPtr + 2], eax
+    lgdt [GdtPtr]
 
-     lgdt  [GdtPtr]
+    ; 关中断
+    cli
 
-     cli   ;关中断
+    ; 打开A20
+    in al, 92h
+    or al, 00000010b
+    out 92h, al
 
-     in    al,  92h
-     or    al,  00000010b
-     out   92h, al
+    mov eax, cr0
+    or  eax, 1
+    mov cr0, eax
 
-     mov   eax, cr0
-     or    eax , 1
-     mov   cr0, eax
+    jmp dword SelectorCode32:0
 
-     jmp   dword  SelectorCode32: 0
-
-     [SECTION .s32]
-     [BITS  32]
-
+[SECTION .s32]
+[BITS 32]
 LABEL_SEG_CODE32:
-     ;initialize stack for c code
-     mov  ax, SelectorStack
-     mov  ss, ax
-     mov  esp, TopOfStack
+    ; initialize stack for c code    
+    mov ax, SelectorStack
+    mov ss, ax
+    mov esp, TopOfStack
 
-     mov  ax, SelectorVram
-     mov  ds,  ax
+    mov ax, SelectorVram
+    mov ds, ax
 
-C_CODE_ENTRY:
-     %include "os.asm"
+%include "os.asm"
 
-
-_io_hlt:  ;void io_hlt(void);
-      HLT
-      RET
-
-_io_in8:
-      mov  edx, [esp + 4]
-      mov  eax, 0
-      in   al, dx
-
-_io_in16:
-      mov  edx, [esp + 4]
-      mov  eax, 0
-      in   ax, dx
-
- _io_in32:
-      mov edx, [esp + 4]
-      in  eax, dx
-      ret
-
-_io_out8:
-       mov edx, [esp + 4]
-       mov al, [esp + 8]
-       out dx, al
-       ret
-
-_io_out16:
-       mov edx, [esp + 4]
-       mov eax, [esp + 8]
-       out dx, ax
-       ret
-
-_io_out32:
-        mov edx, [esp + 4]
-        mov eax, [esp + 8]
-        out dx, eax
-        ret
+; void io_hlt(void)
+_io_hlt:
+    HLT
+    ret
 
 _io_cli:
-      CLI
-      RET
+    cli 
+    ret
+
+_io_sti:
+    sti
+    ret
+
+_io_stihlt:
+    sti
+    hlt
+    ret
+
+_io_in8:
+    mov edx, [esp+4]
+    mov eax, 0
+    in al, dx
+    ret
+
+_io_in16:
+    mov edx, [esp+4]
+    mov eax, 0
+    in ax, dx
+    ret
+
+_io_in32:
+    mov edx, [esp+4]
+    in eax, dx
+    ret
+
+_io_out8:
+    mov edx, [esp+4]
+    mov al, [esp+8]
+    out dx, al
+    ret
+
+_io_out16:
+    mov edx, [esp+4]
+    mov eax, [esp+8]
+    out dx, ax
+    ret
+
+_io_out32:
+    mov edx, [esp+4]
+    mov eax, [esp+8]
+    out dx, eax
+    ret
 
 _io_load_eflags:
-        pushfd
-        pop  eax
-        ret
+    pushfd
+    pop eax
+    ret
 
 _io_store_eflags:
-        mov eax, [esp + 4]
-        push eax
-        popfd
-        ret
+    mov eax, [esp+4]
+    push eax
+    popfd
+    ret
 
-SegCode32Len   equ  $ - LABEL_SEG_CODE32
+SegCode32Len equ $ - LABEL_SEG_CODE32
 
 [SECTION .gs]
 ALIGN 32
 [BITS 32]
 LABEL_STACK:
-     times 512  db 0
-TopOfStack  equ  $ - LABEL_STACK
+    times 512 db 0
+TopOfStack equ $ - LABEL_STACK

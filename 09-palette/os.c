@@ -15,38 +15,40 @@
 #define COL8_008484 14
 #define COL8_848484 15
 
-extern void io_hlt(void);
-
-extern void io_cli(void);
-extern void io_out(int port, int data);
-
-extern int io_load_eflags(void);
-extern void io_store_eflags(int eflags);
+void io_hlt(void);
+void io_cli(void);
+void io_out(void);
+int io_load_eflags(void);
+void io_store_eflags(int);
 
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x, int y, int x0, int y0);
+void boxfill8(unsigned char *varm, 
+                int xsize, 
+                unsigned char c, 
+                int x, 
+                int y, 
+                int x0,
+                int y0);
 
 void CMain(void)
 {
-  char *p = (char *)0xa0000;
+    char *p = (char *)0xa0000;
 
-  init_palette();
+    init_palette();
 
-  boxfill8(p, 320, COL8_FF0000, 20, 20, 120, 120);
-  boxfill8(p, 320, COL8_00FF00, 70, 50, 170, 150);
-  boxfill8(p, 320, COL8_0000FF, 120, 80, 220, 180);
+    boxfill8(p, 320, COL8_FF0000, 20, 20, 120, 120);
+    boxfill8(p, 320, COL8_00FF00, 70, 50, 170, 150);
+    boxfill8(p, 320, COL8_0000FF, 120, 80, 220, 180);
+    
+    for (;;) {
+        io_hlt();
+    }
 
-  for (;;)
-  {
-    io_hlt();
-  }
 }
 
-void init_palette(void)
-{
-  // value of 16 colors
-  static unsigned char table_rgb[16 * 3] = {
+void init_palette(void) {
+    static  unsigned char table_rgb[16 *3] = {
     0x00,  0x00,  0x00,
     0xff,  0x00,  0x00,
     0x00,  0xff,  0x00,
@@ -63,41 +65,43 @@ void init_palette(void)
     0x84,  0x00,  0x84,
     0x00,  0x84,  0x84,
     0x84,  0x84,  0x84,
-  };
+    };
 
-  set_palette(0, 15, table_rgb);
-  return;
+    set_palette(0, 15, table_rgb);
+    return;
 }
 
 void set_palette(int start, int end, unsigned char *rgb)
 {
-  int i, eflags;
-  // preserve eflags
-  eflags = io_load_eflags();
-  // disable interupt
-  io_cli();
-  // write port
-  io_out8(0x03c8, start); //set  palette number
-  for (i = start; i <= end; i++)
-  {
-    io_out8(0x03c9, rgb[0]);
-    io_out8(0x03c9, rgb[1]);
-    io_out8(0x03c9, rgb[2]);
+    int i, eflags;
+    eflags = io_load_eflags();
+    io_cli();
 
-    rgb += 3;
-  }
-  // recover eflags
-  io_store_eflags(eflags);
-  return;
+    io_out8(0x03c8, start);
+    for (i = start; i <= end; ++i) {
+        io_out8(0x03c9, rgb[0]);
+        io_out8(0x03c9, rgb[1]);
+        io_out8(0x03c9, rgb[2]);
+
+        rgb += 3;
+    }
+
+    io_store_eflags(eflags);
+    return;
 }
 
-void boxfill8(unsigned char *vram, int xsize, unsigned char c,
-              int x0, int y0, int x1, int y1)
+void boxfill8(unsigned char *varm, 
+                int xsize, 
+                unsigned char c, 
+                int x0, 
+                int y0, 
+                int x1,
+                int y1)
 {
-  int x, y;
-  for (y = y0; y <= y1; y++)
-    for (x = x0; x <= x1; x++)
-    {
-      vram[y * xsize + x] = c;
+    int x, y;
+    for (y = y0; y <= y1; ++y) {
+        for (x = x0; x <= x1; ++x) {
+            varm[y * xsize + x] = c;
+        }
     }
 }

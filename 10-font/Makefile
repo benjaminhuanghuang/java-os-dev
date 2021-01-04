@@ -34,6 +34,5 @@ clean:
 	rm *.class
 	rm *.bin
 	rm *.img
-	rm *.obj
-	rm write_vag.asm
-	rm write_vga1.asm
+	rm os.asm
+	rm os1.asm

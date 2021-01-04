@@ -18,7 +18,7 @@
 extern void io_hlt(void);
 
 extern void io_cli(void);
-extern void io_out(int port, int data);
+extern void io_out8(int port, int data);
 
 extern int io_load_eflags(void);
 extern void io_store_eflags(int eflags);
@@ -27,16 +27,46 @@ void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x, int y, int x0, int y0);
 
+// extern char systemFont[];
+// static char fontA[16] = {
+// 0x00, 0x18, 0x18, 0x18,0x18,0x24,0x24,0x24,
+// 0x24, 0x7e, 0x42, 0x42,0x42, 0xe7, 0x00, 0x00
+// };
+
+void showFont8(char *vram, int xsize, int x, int y, char c, char *font);
+
 void CMain(void)
 {
+
   char *p = (char *)0xa0000;
 
   init_palette();
+  int xsize = 320 , ysize = 200;
 
-  boxfill8(p, 320, COL8_FF0000, 20, 20, 120, 120);
-  boxfill8(p, 320, COL8_00FF00, 70, 50, 170, 150);
-  boxfill8(p, 320, COL8_0000FF, 120, 80, 220, 180);
 
+  boxfill8(p, xsize, COL8_008484, 0, 0, xsize-1, ysize-29);
+  // boxfill8(p, xsize, COL8_C6C6C6, 0, ysize-28, xsize-1, ysize-28);
+  // boxfill8(p, xsize, COL8_FFFFFF, 0, ysize-27, xsize-1, ysize-27);
+  // boxfill8(p, xsize, COL8_C6C6C6, 0, ysize-26, xsize-1, ysize-1);
+
+  // boxfill8(p, xsize, COL8_FFFFFF, 3, ysize-24, 59, ysize-24);
+  // boxfill8(p, xsize, COL8_FFFFFF, 2, ysize-24, 2, ysize-4);
+  // boxfill8(p, xsize, COL8_848484, 3, ysize-4,  59, ysize-4);
+  // boxfill8(p, xsize, COL8_848484, 59, ysize-23, 59, ysize-5);
+  // boxfill8(p, xsize, COL8_000000, 2, ysize-3, 59, ysize-3);
+  // boxfill8(p, xsize, COL8_000000, 60, ysize-24, 60, ysize-3);
+
+  // boxfill8(p, xsize, COL8_848484, xsize-47, ysize-24, xsize-4, ysize-24);
+  // boxfill8(p, xsize, COL8_848484, xsize-47, ysize-23, xsize-47, ysize-4);
+  // boxfill8(p, xsize, COL8_FFFFFF, xsize-47, ysize-3, xsize-4, ysize-3);
+  // boxfill8(p, xsize, COL8_FFFFFF, xsize-3,  ysize-24, xsize-3, ysize-3);
+
+
+  // draw text
+  // showFont8(p, 320, 50, 50, 0, fontA);
+  // showFont8(p, 320, 8, 8, COL8_FFFFFF, systemFont + 'A'*16);
+  // showFont8(p, 320, 16, 8, COL8_FFFFFF, systemFont + 'B'*16);
+  // showFont8(p, 320, 24, 8, COL8_FFFFFF, systemFont + 'C'*16);
   for (;;)
   {
     io_hlt();
@@ -47,22 +77,22 @@ void init_palette(void)
 {
   // value of 16 colors
   static unsigned char table_rgb[16 * 3] = {
-    0x00,  0x00,  0x00,
-    0xff,  0x00,  0x00,
-    0x00,  0xff,  0x00,
-    0xff,  0xff,  0x00,
-    0x00,  0x00,  0xff,
-    0xff,  0x00,  0xff,
-    0x00,  0xff,  0xff,
-    0xff,  0xff,  0xff,
-    0xc6,  0xc6,  0xc6,
-    0x84,  0x00,  0x00,
-    0x00,  0x84,  0x00,
-    0x84,  0x84,  0x00,
-    0x00,  0x00,  0x84,
-    0x84,  0x00,  0x84,
-    0x00,  0x84,  0x84,
-    0x84,  0x84,  0x84,
+    0x00, 0x00, 0x00,	/*  0:黒 */
+		0xff, 0x00, 0x00,	/*  1:明るい赤 */
+		0x00, 0xff, 0x00,	/*  2:明るい緑 */
+		0xff, 0xff, 0x00,	/*  3:明るい黄色 */
+		0x00, 0x00, 0xff,	/*  4:明るい青 */
+		0xff, 0x00, 0xff,	/*  5:明るい紫 */
+		0x00, 0xff, 0xff,	/*  6:明るい水色 */
+		0xff, 0xff, 0xff,	/*  7:白 */
+		0xc6, 0xc6, 0xc6,	/*  8:明るい灰色 */
+		0x84, 0x00, 0x00,	/*  9:暗い赤 */
+		0x00, 0x84, 0x00,	/* 10:暗い緑 */
+		0x84, 0x84, 0x00,	/* 11:暗い黄色 */
+		0x00, 0x00, 0x84,	/* 12:暗い青 */
+		0x84, 0x00, 0x84,	/* 13:暗い紫 */
+		0x00, 0x84, 0x84,	/* 14:暗い水色 */
+		0x84, 0x84, 0x84	/* 15:暗い灰色 */
   };
 
   set_palette(0, 15, table_rgb);
@@ -80,9 +110,9 @@ void set_palette(int start, int end, unsigned char *rgb)
   io_out8(0x03c8, start); //set  palette number
   for (i = start; i <= end; i++)
   {
-    io_out8(0x03c9, rgb[0]);
-    io_out8(0x03c9, rgb[1]);
-    io_out8(0x03c9, rgb[2]);
+    io_out8(0x03c9, rgb[0]/4);
+    io_out8(0x03c9, rgb[1]/4);
+    io_out8(0x03c9, rgb[2]/4);
 
     rgb += 3;
   }
@@ -101,3 +131,30 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c,
       vram[y * xsize + x] = c;
     }
 }
+
+void showFont8(char *vram, int xsize, int x, int y, char c, char *font)
+{
+	int i;
+	unsigned char *p; 
+  char d; /* data */;
+	for (i = 0; i < 16; i++) {
+		p = vram + (y + i) * xsize + x;
+		d = font[i];
+		if ((d & 0x80) != 0) { p[0] = c; }
+		if ((d & 0x40) != 0) { p[1] = c; }
+		if ((d & 0x20) != 0) { p[2] = c; }
+		if ((d & 0x10) != 0) { p[3] = c; }
+		if ((d & 0x08) != 0) { p[4] = c; }
+		if ((d & 0x04) != 0) { p[5] = c; }
+		if ((d & 0x02) != 0) { p[6] = c; }
+		if ((d & 0x01) != 0) { p[7] = c; }
+	}
+	return;
+}
+
+// void showString(unsigned char* vram, int xsize, int x, int y, char color, unsigned char *s ) {
+//     for (; *s != 0x00; s++) {
+//        showFont8(vram, xsize, x, y,color, systemFont+ *s * 16);
+//        x += 8;
+//     }
+// }

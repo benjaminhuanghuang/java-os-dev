@@ -91,58 +91,60 @@ C_CODE_ENTRY:
 
 
 _io_hlt:  ;void io_hlt(void);
-      HLT
-      RET
+     HLT
+     RET
 
 _io_in8:
-      mov  edx, [esp + 4]
-      mov  eax, 0
-      in   al, dx
+     mov  edx, [esp + 4]
+     mov  eax, 0
+     in   al, dx
+     RET
 
 _io_in16:
-      mov  edx, [esp + 4]
-      mov  eax, 0
-      in   ax, dx
-
+     mov  edx, [esp + 4]
+     mov  eax, 0
+     in   ax, dx
+     RET
+     
  _io_in32:
-      mov edx, [esp + 4]
-      in  eax, dx
-      ret
+     mov edx, [esp + 4]
+     in  eax, dx
+     ret
 
 _io_out8:
-       mov edx, [esp + 4]
-       mov al, [esp + 8]
-       out dx, al
-       ret
+     mov edx, [esp + 4]
+     mov al, [esp + 8]
+     out dx, al
+     ret
 
 _io_out16:
-       mov edx, [esp + 4]
-       mov eax, [esp + 8]
-       out dx, ax
-       ret
+     mov edx, [esp + 4]
+     mov eax, [esp + 8]
+     out dx, ax
+     ret
 
 _io_out32:
-        mov edx, [esp + 4]
-        mov eax, [esp + 8]
-        out dx, eax
-        ret
+     mov edx, [esp + 4]
+     mov eax, [esp + 8]
+     out dx, eax
+     ret
 
 _io_cli:
-      CLI
-      RET
+     CLI
+     RET
 
 _io_load_eflags:
-        pushfd
-        pop  eax
-        ret
+     pushfd
+     pop  eax
+     ret
 
 _io_store_eflags:
-        mov eax, [esp + 4]
-        push eax
-        popfd
-        ret
+     mov eax, [esp + 4]
+     push eax
+     popfd
+     ret
 
-%include "fontData.inc"
+;%include "fontData.inc"
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32
 
