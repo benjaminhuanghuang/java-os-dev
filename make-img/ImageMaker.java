@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public class ImageMaker {
     private Floppy floppyDisk = new Floppy();
     private int  MAX_SECTOR_NUM = 18;
+    private String kernelName = "";
 
     private void writeFileToFloppy(String fileName, boolean bootable, int cylinder,int beginSec) {
         File file = new File(fileName);
@@ -44,17 +45,25 @@ public class ImageMaker {
         }
     }
 
-    public ImageMaker(String bootBin) {
-        writeFileToFloppy(bootBin, true, 0, 1);
+    public ImageMaker(String bootName, String kernelName) {
+        writeFileToFloppy(bootName, true, 0, 1);
+        this.kernelName = kernelName;
     }
 
     public void makeFloppy(String floppyName) {
-        writeFileToFloppy("kernel.bin", false, 1, 2);
+        if(!this.kernelName.isEmpty())
+        {
+            writeFileToFloppy(this.kernelName, false, 1, 2);
+        }
         floppyDisk.makeFloppy(floppyName);
     }
 
     public static void main(String[] args) {
-        ImageMaker op = new ImageMaker("boot.bin");
-        op.makeFloppy("myos.img");
+        String imgName = args[0];
+        String bootName = args[1];
+        String kernelName = args[2];
+      
+        ImageMaker op = new ImageMaker(bootName, kernelName);
+        op.makeFloppy(imgName);
     }
 }

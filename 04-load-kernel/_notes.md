@@ -9,7 +9,7 @@ kernel.asm 会被编译成 kernel.bin 然后写到 image 的 0Head, 1Cylinder, 2
 ```
 boot.asm  会被编译成 boot.bin 然后 写到 image的启动扇区，运行后会从image加载并kernel.bin 
 
-
+发现一个问题：windows无法读取 image， 说明把kernel.bin 写入 image 破坏了文件系统，
 
 ## ASM
 读取软盘的汇编代码

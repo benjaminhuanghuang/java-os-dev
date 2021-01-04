@@ -1,3 +1,5 @@
+IMAGE_NAME  = myos04.img
+
 default :
 	make run
 
