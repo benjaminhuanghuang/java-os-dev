@@ -3,7 +3,15 @@
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=4
 
+kernel.asm 会被编译成 kernel.bin 然后写到 image 的 0Head, 1Cylinder, 2Sec
+```
+  writeFileToFloppy("kernel.bin", false, 1, 2);
+```
+boot.asm  会被编译成 boot.bin 然后 写到 image的启动扇区，运行后会从image加载并kernel.bin 
 
+
+
+## ASM
 读取软盘的汇编代码
 ```
 mov CH, 1 ;CH 用来存储柱面号

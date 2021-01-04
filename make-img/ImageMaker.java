@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * Read boot.bin into Floppy.
  * Write Floppy to a floppy disk img file
  */
-public class HelloOS {
+public class ImageMaker {
     private Floppy floppyDisk = new Floppy();
     private int  MAX_SECTOR_NUM = 18;
 
@@ -44,19 +44,17 @@ public class HelloOS {
         }
     }
 
-    public HelloOS(String fileName) {
-        writeFileToFloppy(fileName, true, 0, 1);
+    public ImageMaker(String bootBin) {
+        writeFileToFloppy(bootBin, true, 0, 1);
     }
 
     public void makeFloppy(String floppyName) {
-        String s = "This is a text from cylinder 1 and sector 2";
-        floppyDisk.writeFloppy(Floppy.MAGNETIC_HEAD.MAGNETIC_HEAD_0, 1, 2, s.getBytes());
-
+        writeFileToFloppy("kernel.bin", false, 1, 2);
         floppyDisk.makeFloppy(floppyName);
     }
 
     public static void main(String[] args) {
-        HelloOS op = new HelloOS("boot.bin");
+        ImageMaker op = new ImageMaker("boot.bin");
         op.makeFloppy("myos.img");
     }
 }
