@@ -48,14 +48,23 @@ void initBootInfo(struct BOOTINFO *pBootInfo);
 
 void CMain(void)
 {
+    int i;
+  char *p = 0;
+  // 0xa0000 is the start of vga in memory
+  for (i = 0xa0000; i <= 0xaffff; i++)
+  {
+    p = (char*)i;
+    *p = i & 0xf;
+  }
+
   initBootInfo(&bootInfo);
   char*vram = bootInfo.vgaRam;
   int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
 
   init_palette();
 
-  init_mouse_cursor(mcursor, COL8_008484);
-  putblock(vram, xsize, 16, 16, 80, 80, mcursor, 16);
+  // init_mouse_cursor(mcursor, COL8_008484);
+  // putblock(vram, xsize, 16, 16, 80, 80, mcursor, 16);
   // boxfill8(p, xsize, COL8_C6C6C6, 0, ysize-28, xsize-1, ysize-28);
   // boxfill8(p, xsize, COL8_FFFFFF, 0, ysize-27, xsize-1, ysize-27);
   // boxfill8(p, xsize, COL8_C6C6C6, 0, ysize-26, xsize-1, ysize-1);
@@ -126,9 +135,9 @@ void set_palette(int start, int end, unsigned char *rgb)
   io_out8(0x03c8, start); //set  palette number
   for (i = start; i <= end; i++)
   {
-    io_out8(0x03c9, rgb[0] / 4);
-    io_out8(0x03c9, rgb[1] / 4);
-    io_out8(0x03c9, rgb[2] / 4);
+    // io_out8(0x03c9, rgb[0] / 4);
+    // io_out8(0x03c9, rgb[1] / 4);
+    // io_out8(0x03c9, rgb[2] / 4);
 
     rgb += 3;
   }
