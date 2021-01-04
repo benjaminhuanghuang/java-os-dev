@@ -17,9 +17,14 @@
 
 void io_hlt(void);
 void io_cli(void);
-void io_out(void);
-int io_load_eflags(void);
-void io_store_eflags(int);
+void io_out8(int port, int data);
+int  io_load_eflags(void);
+void io_store_eflags(int eflags);
+
+struct  BOOTINFO {
+    char* vgaRam;
+    short screenX, screenY;
+};
 
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
@@ -33,18 +38,28 @@ void boxfill8(unsigned char *varm,
 
 void CMain(void)
 {
-    char *p = (char *)0xa0000;
+    struct BOOTINFO bootInfo;
+    initBootInfo(&bootInfo);
+    char* vram = bootInfo.vgaRam;
+    int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+
 
     init_palette();
 
-    boxfill8(p, 320, COL8_FF0000, 20, 20, 120, 120);
-    boxfill8(p, 320, COL8_00FF00, 70, 50, 170, 150);
-    boxfill8(p, 320, COL8_0000FF, 120, 80, 220, 180);
+    boxfill8(vram, 320, COL8_FF0000, 20, 20, 120, 120);
+    boxfill8(vram, 320, COL8_00FF00, 70, 50, 170, 150);
+    boxfill8(vram, 320, COL8_0000FF, 120, 80, 220, 180);
     
     for (;;) {
         io_hlt();
     }
 
+}
+
+void initBootInfo(struct BOOTINFO *pBootInfo) {
+    pBootInfo->vgaRam = (char*)0xa0000;
+    pBootInfo->screenX = 320;
+    pBootInfo->screenY = 200;
 }
 
 void init_palette(void) {
