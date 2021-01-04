@@ -6,3 +6,4 @@ target/
 *.img
 *.bin
 *.o
+bin/

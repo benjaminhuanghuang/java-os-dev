@@ -146,6 +146,8 @@ _io_store_eflags:
     popfd
     ret
 
+
+
 SegCode32Len equ $ - LABEL_SEG_CODE32
 
 [SECTION .gs]
