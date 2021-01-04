@@ -1,9 +1,12 @@
+IMAGE_NAME  = myos08.img
+BOOT_NAME  = boot.bin
+KERNEL_NAME  = kernel.bin
+
 default :
 	make run
 
-HelloOS : HelloOS.java Makefile
-	javac HelloOS.java
-
+%.bin : %.asm Makefile
+	nasm $*.asm -f bin -o $*.bin
 
 write_vga.o : write_vga.c Makefile
 	gcc -m32 -fno-asynchronous-unwind-tables -c -o write_vga.o write_vga.c
@@ -15,23 +18,21 @@ write_vga1.asm : write_vga.o Makefile
 write_vga.asm : write_vga1.asm Makefile
 	cat write_vga1.asm | sed -e '/^SECTION/d' | sed -e '/^global/d' | sed -e '/^extern/d' > write_vga.asm
 
-%.bin : %.asm %.c Makefile
-	nasm $*.asm -f bin -o $*.bin
-
 kernel.bin : kernel.asm write_vga.asm write_vga.c Makefile
 	nasm kernel.asm -f bin -o kernel.bin
 
-myos.img : HelloOS boot.bin kernel.bin Makefile
-	java HelloOS
+myos.img : kernel.bin boot.bin Makefile
+	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) $(KERNEL_NAME)
+
 
 run :
 	make myos.img
-	qemu-system-i386 -fda myos.img -boot a
+	qemu-system-i386 -fda $(IMAGE_NAME) -boot a
 
 clean:
-	rm *.class
 	rm *.bin
 	rm *.img
 	rm *.obj
+	rm *.o
 	rm write_vag.asm
 	rm write_vga1.asm

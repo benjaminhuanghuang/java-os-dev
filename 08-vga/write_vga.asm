@@ -1,5 +1,5 @@
 ; Disassembly of file: write_vga.o
-; Sun Jan  3 13:27:09 2021
+; Mon Jan  4 12:13:48 2021
 ; Mode: 32 bits
 ; Syntax: YASM/NASM
 ; Instruction set: 80386

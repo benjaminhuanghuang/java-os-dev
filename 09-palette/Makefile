@@ -1,35 +1,38 @@
+IMAGE_NAME  = myos09.img
+BOOT_NAME  = boot.bin
+KERNEL_NAME  = kernel.bin
+
 default :
 	make run
-
-HelloOS : HelloOS.java Makefile
-	javac HelloOS.java
-
-
-os.o : os.c Makefile
-	gcc -m32 -fno-asynchronous-unwind-tables -c -o os.o os.c
-
-os1.asm : os.o Makefile
-	../objconv -fnasm os.o os1.asm
-
-# remove the SECTION, global, extern... 
-os.asm : os1.asm Makefile
-	cat os1.asm | sed -e '/^SECTION/d' | sed -e '/^global/d' | sed -e '/^extern/d' > os.asm
 
 %.bin : %.asm Makefile
 	nasm $*.asm -f bin -o $*.bin
 
-kernel.bin : kernel.asm os.asm Makefile
+write_vga.o : write_vga.c Makefile
+	gcc -m32 -fno-asynchronous-unwind-tables -c -o write_vga.o write_vga.c
+
+write_vga1.asm : write_vga.o Makefile
+	../objconv -fnasm write_vga.o write_vga1.asm
+
+# remove the SECTION, global, extern... 
+write_vga.asm : write_vga1.asm Makefile
+	cat write_vga1.asm | sed -e '/^SECTION/d' | sed -e '/^global/d' | sed -e '/^extern/d' > write_vga.asm
+
+kernel.bin : kernel.asm write_vga.asm write_vga.c Makefile
 	nasm kernel.asm -f bin -o kernel.bin
 
-myos.img : HelloOS boot.bin kernel.bin Makefile
-	java HelloOS
+myos.img : kernel.bin boot.bin Makefile
+	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) $(KERNEL_NAME)
+
 
 run :
 	make myos.img
-	qemu-system-i386 -fda myos.img -boot a
+	qemu-system-i386 -fda $(IMAGE_NAME) -boot a
 
 clean:
-	rm *.class
+	rm *.bin
 	rm *.img
-	rm os1.asm
-	rm os.asm
+	rm *.obj
+	rm *.o
+	rm write_vag.asm
+	rm write_vga1.asm
