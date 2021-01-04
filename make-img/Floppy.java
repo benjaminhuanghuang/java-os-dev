@@ -99,8 +99,11 @@ public class Floppy {
         try {
             /**
              * The order :
-             *  header 0, cylinder 0, header 1, cylinder 0,
-             *  header 0, cylinder 1, header 1, cylinder 1...
+             *  cylinder 0: header 0, sector 1 ~ 18
+             *              header 1, sector 1 ~ 18
+             *  cylinder 1: header 0, sector 1 ~ 18
+             *              header 1, sector 1 ~ 18
+             *  ...
              */
             DataOutputStream out = new DataOutputStream(new FileOutputStream(fileName));
             for (int cylinder = 0; cylinder < CYLINDER_COUNT; cylinder++) {

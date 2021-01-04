@@ -1,6 +1,6 @@
 %include "pm.inc"
 
-org   0x9000
+org   0x8000
 
 jmp   LABEL_BEGIN
 

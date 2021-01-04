@@ -22,8 +22,8 @@ kernel.bin : kernel.asm write_vga.asm write_vga.c Makefile
 	nasm kernel.asm -f bin -o kernel.bin
 
 myos.img : kernel.bin boot.bin Makefile
-	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) $(KERNEL_NAME)
-
+	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) "" &&\
+	mcopy -i $(IMAGE_NAME) $(KERNEL_NAME) ::$(KERNEL_NAME)
 
 run :
 	make myos.img

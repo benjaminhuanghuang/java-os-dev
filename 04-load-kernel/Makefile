@@ -9,7 +9,8 @@ default :
 	nasm $*.asm -f bin -o $*.bin
 
 myos.img : kernel.bin boot.bin Makefile
-	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) $(KERNEL_NAME)
+	java -classpath ../make-img ImageMaker $(IMAGE_NAME) $(BOOT_NAME) "" &&\
+	mcopy -i $(IMAGE_NAME) $(KERNEL_NAME) ::$(KERNEL_NAME)
 
 run :
 	$(MAKE) myos.img
