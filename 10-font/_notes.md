@@ -5,6 +5,9 @@
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=10
 
+
+Load more sector
+
 ## Create font data
 用工具 makeFont 将字体文件(text)读入，转换汇编代码(fontData.inc)
 

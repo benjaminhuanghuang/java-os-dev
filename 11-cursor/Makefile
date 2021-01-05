@@ -1,4 +1,4 @@
-IMAGE_NAME  = myos11.img
+IMAGE_NAME  = myos10.img
 BOOT_NAME  = boot.bin
 KERNEL_NAME  = kernel.bin
 
@@ -8,8 +8,9 @@ default :
 %.bin : %.asm Makefile
 	nasm $*.asm -f bin -o $*.bin
 
+# Need -target x86_64-unknown-linux-gun to create ELF32 format on Mac
 os.o : os.c Makefile
-	gcc -m32 -fno-asynchronous-unwind-tables -c -o os.o os.c
+	gcc -target x86_64-unknown-linux-gun -m32 -O0 -s -c -o os.o os.c
 
 os1.asm : os.o Makefile
 	../objconv -fnasm os.o os1.asm
@@ -32,7 +33,6 @@ run :
 clean:
 	rm *.bin
 	rm *.img
-	rm *.obj
 	rm *.o
-	rm write_vag.asm
-	rm write_vga1.asm
+	rm os1.asm
+	rm os.asm
