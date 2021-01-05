@@ -9,10 +9,10 @@ default :
 	nasm $*.asm -f bin -o $*.bin
 
 os.o : os.c Makefile
-	gcc -m32 -fno-asynchronous-unwind-tables -c -o os.o os.c
+	gcc -fno-asynchronous-unwind-tables -m32 -c -s -o os.o os.c
 
 os1.asm : os.o Makefile
-	../objconv -fnasm os.o os1.asm
+	../objconv -fnasm -PE32 os.o os1.asm
 
 # remove the SECTION, global, extern... 
 os.asm : os1.asm Makefile
@@ -34,5 +34,5 @@ clean:
 	rm *.img
 	rm *.obj
 	rm *.o
-	rm write_vag.asm
-	rm write_vga1.asm
+	rm os1.asm
+	rm os.asm
