@@ -267,13 +267,32 @@ void putblock(char *vram, int vxsize, int pxsize, int pysize, int px0,
   }
 }
 
-void intHandlerFromC(char *esp)
-{
-    // char* vram = bootInfo.vgaRam;
-    // int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
-    // boxfill8(vram, xsize, COL8_000000, 0,0,32*8 -1, 15);
-    // showString(vram, xsize, 0, 0, COL8_FFFFFF, "PS/2 keyboard"); 
-    // for (;;) {
-    //     io_hlt();
-    // }
+void intHandlerFromC(char* esp) {
+    char*vram = bootInfo.vgaRam;
+    int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+    io_out8(PIC_OCW2, 0x21);
+    unsigned char data = 0;
+    data = io_in8(PORT_KEYDAT);
+    char* pStr = charToHexStr(data);
+    static int showPos = 0;
+    showString(vram, xsize, showPos, 0, COL8_FFFFFF, pStr);
+    showPos += 32;
+}
+
+char   charToHexVal(char c) {
+    if (c >= 10) {
+        return 'A' + c - 10;
+    } 
+
+    return '0' + c;
+}
+
+char*  charToHexStr(unsigned char c) {
+    int i = 0;
+    char mod = c % 16;
+    keyval[3] = charToHexVal(mod);
+    c = c / 16;
+    keyval[2] = charToHexVal(c);
+
+    return keyval;
 }
