@@ -10,11 +10,15 @@ LABEL_GDT:          Descriptor        0,            0,                   0
 LABEL_DESC_CODE32:  Descriptor        0,      SegCode32Len - 1,       DA_C + DA_32
 LABEL_DESC_VIDEO:   Descriptor     0B8000h,         0ffffh,            DA_DRW
 
+; length of GDT = current address - LABEL_GDT
 GdtLen     equ    $ - LABEL_GDT
-GdtPtr     dw     GdtLen - 1
-           dd     0
+; 
+GdtPtr     dw     GdtLen - 1  ; 2 bytes, the limit of GDT
+           dd     0           ; 4 bytes, the start of GDT       
 
+; address of the second selector
 SelectorCode32    equ   LABEL_DESC_CODE32 -  LABEL_GDT
+; address of the third selector
 SelectorVideo     equ   LABEL_DESC_VIDEO  -  LABEL_GDT
 
 [SECTION  .s16]
@@ -45,10 +49,11 @@ LABEL_BEGIN:
 
      cli   ;关中断
 
+     ; 92 号端口 (8位)的最高位值1
      in    al,  92h
      or    al,  00000010b
      out   92h, al
-
+     ; 
      mov   eax, cr0
      or    eax , 1
      mov   cr0, eax
