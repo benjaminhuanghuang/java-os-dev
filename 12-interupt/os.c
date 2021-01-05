@@ -28,9 +28,10 @@ void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x, int y, int x0, int y0);
 
 extern char systemFont[];
-struct  BOOTINFO {
-    char* vgaRam;
-    short screenX, screenY;
+struct BOOTINFO
+{
+  char *vgaRam;
+  short screenX, screenY;
 };
 static struct BOOTINFO bootInfo;
 
@@ -46,40 +47,47 @@ void init_mouse_cursor(char *mouse, char b);
 static char mcursor[256];
 void initBootInfo(struct BOOTINFO *pBootInfo);
 
+
 void CMain(void)
 {
-   char *p = (char *)0xa0000;
+  initBootInfo(&bootInfo);
+  char *vram = bootInfo.vgaRam;
+  int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
 
   init_palette();
-  int xsize = 320 , ysize = 200;
 
+  //绘制桌面背景
+  boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
+  boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
+  boxfill8(vram, xsize, COL8_FFFFFF, 0, ysize - 27, xsize - 1, ysize - 27);
+  boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 26, xsize - 1, ysize - 1);
 
-  boxfill8(p, xsize, COL8_008484, 0, 0, xsize-1, ysize-29);
-  boxfill8(p, xsize, COL8_C6C6C6, 0, ysize-28, xsize-1, ysize-28);
-  boxfill8(p, xsize, COL8_FFFFFF, 0, ysize-27, xsize-1, ysize-27);
-  boxfill8(p, xsize, COL8_C6C6C6, 0, ysize-26, xsize-1, ysize-1);
+  boxfill8(vram, xsize, COL8_FFFFFF, 3, ysize - 24, 59, ysize - 24);
+  boxfill8(vram, xsize, COL8_FFFFFF, 2, ysize - 24, 2, ysize - 4);
+  boxfill8(vram, xsize, COL8_848484, 3, ysize - 4, 59, ysize - 4);
+  boxfill8(vram, xsize, COL8_848484, 59, ysize - 23, 59, ysize - 5);
+  boxfill8(vram, xsize, COL8_000000, 2, ysize - 3, 59, ysize - 3);
+  boxfill8(vram, xsize, COL8_000000, 60, ysize - 24, 60, ysize - 3);
 
-  boxfill8(p, xsize, COL8_FFFFFF, 3, ysize-24, 59, ysize-24);
-  boxfill8(p, xsize, COL8_FFFFFF, 2, ysize-24, 2, ysize-4);
-  boxfill8(p, xsize, COL8_848484, 3, ysize-4,  59, ysize-4);
-  boxfill8(p, xsize, COL8_848484, 59, ysize-23, 59, ysize-5);
-  boxfill8(p, xsize, COL8_000000, 2, ysize-3, 59, ysize-3);
-  boxfill8(p, xsize, COL8_000000, 60, ysize-24, 60, ysize-3);
-
-  boxfill8(p, xsize, COL8_848484, xsize-47, ysize-24, xsize-4, ysize-24);
-  boxfill8(p, xsize, COL8_848484, xsize-47, ysize-23, xsize-47, ysize-4);
-  boxfill8(p, xsize, COL8_FFFFFF, xsize-47, ysize-3, xsize-4, ysize-3);
-  boxfill8(p, xsize, COL8_FFFFFF, xsize-3,  ysize-24, xsize-3, ysize-3);
-
+  boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 24, xsize - 4, ysize - 24);
+  boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 23, xsize - 47, ysize - 4);
+  boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize - 3, xsize - 4, ysize - 3);
+  boxfill8(vram, xsize, COL8_FFFFFF, xsize - 3, ysize - 24, xsize - 3, ysize - 3);
 
   // draw text
   // showFont8(p, 320, 50, 50, 0, fontA);
-  showFont8(p, 320, 8, 8, COL8_FFFFFF, systemFont + 'A'*16);
-  showFont8(p, 320, 16, 8, COL8_FFFFFF, systemFont + 'B'*16);
-  showFont8(p, 320, 24, 8, COL8_FFFFFF, systemFont + 'C'*16);
+  showFont8(vram, 320, 8, 8, COL8_FFFFFF, systemFont + 'A' * 16);
+  showFont8(vram, 320, 16, 8, COL8_FFFFFF, systemFont + 'B' * 16);
+  showFont8(vram, 320, 24, 8, COL8_FFFFFF, systemFont + 'C' * 16);
+  
+  //鼠标初始位置
+  int mx = (xsize - 16) / 2;
+  int my = (ysize - 28 - 16) / 2;
 
+  //初始化存储鼠标形状颜色的数组(16*16)
   init_mouse_cursor(mcursor, COL8_008484);
-  putblock(p, xsize, 16, 16, 80, 80, mcursor, 16);
+  //绘制鼠标
+  putblock(vram, xsize, 16, 16, mx, my, mcursor, 16);
 
   for (;;)
   {
@@ -87,10 +95,11 @@ void CMain(void)
   }
 }
 
-void initBootInfo(struct BOOTINFO *pBootInfo) {
-    pBootInfo->vgaRam = (char*)0xa0000;
-    pBootInfo->screenX = 320;
-    pBootInfo->screenY = 200;
+void initBootInfo(struct BOOTINFO *pBootInfo)
+{
+  pBootInfo->vgaRam = (char *)0xa0000;
+  pBootInfo->screenX = 320;
+  pBootInfo->screenY = 200;
 }
 
 void init_palette(void)
@@ -152,21 +161,47 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c,
     }
 }
 
-void showFont8(char *vram, int xsize, int x, int y, char c, char* font) {
-    int i;
-    char d;
+void showFont8(char *vram, int xsize, int x, int y, char c, char *font)
+{
+  int i;
+  char d;
 
-    for (i = 0; i < 16; i++) {
-        d = font[i]; 
-        if ((d & 0x80) != 0) {vram[(y+i)*xsize + x + 0] = c;}
-        if ((d & 0x40) != 0) {vram[(y+i)*xsize + x + 1] = c;}
-        if ((d & 0x20) != 0) {vram[(y+i)*xsize + x + 2] = c;} 
-        if ((d & 0x10) != 0) {vram[(y+i)*xsize + x + 3] = c;}
-        if ((d & 0x08) != 0) {vram[(y+i)*xsize + x + 4] = c;}
-        if ((d & 0x04) != 0) {vram[(y+i)*xsize + x + 5] = c;}
-        if ((d & 0x02) != 0) {vram[(y+i)*xsize + x + 6] = c;}
-        if ((d & 0x01) != 0) {vram[(y+i)*xsize + x + 7] = c;}
+  for (i = 0; i < 16; i++)
+  {
+    d = font[i];
+    if ((d & 0x80) != 0)
+    {
+      vram[(y + i) * xsize + x + 0] = c;
     }
+    if ((d & 0x40) != 0)
+    {
+      vram[(y + i) * xsize + x + 1] = c;
+    }
+    if ((d & 0x20) != 0)
+    {
+      vram[(y + i) * xsize + x + 2] = c;
+    }
+    if ((d & 0x10) != 0)
+    {
+      vram[(y + i) * xsize + x + 3] = c;
+    }
+    if ((d & 0x08) != 0)
+    {
+      vram[(y + i) * xsize + x + 4] = c;
+    }
+    if ((d & 0x04) != 0)
+    {
+      vram[(y + i) * xsize + x + 5] = c;
+    }
+    if ((d & 0x02) != 0)
+    {
+      vram[(y + i) * xsize + x + 6] = c;
+    }
+    if ((d & 0x01) != 0)
+    {
+      vram[(y + i) * xsize + x + 7] = c;
+    }
+  }
 }
 
 void showString(char *vram, int xsize, int x, int y, char color, unsigned char *s)
@@ -230,4 +265,15 @@ void putblock(char *vram, int vxsize, int pxsize, int pysize, int px0,
       vram[(py0 + y) * vxsize + (px0 + x)] = buf[y * bxsize + x];
     }
   }
+}
+
+void intHandlerFromC(char *esp)
+{
+    char*vram = bootInfo.vgaRam;
+    int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+    boxfill8(vram, xsize, COL8_000000, 0,0,32*8 -1, 15);
+    // showString(vram, xsize, 0, 0, COL8_FFFFFF, "PS/2 keyboard"); 
+    for (;;) {
+        io_hlt();
+    }
 }
