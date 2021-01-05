@@ -89,11 +89,10 @@ LABEL_SEG_CODE32:
      mov  ax, SelectorVram
      mov  ds,  ax
 
-     ;sti  ; enable interupt
+     sti  ; enable interupt
 C_CODE_ENTRY:
      %include "os.asm"
      jmp $
-
 _SpuriousHandler:
      SpuriousHandler equ _SpuriousHandler - $$
      call intHandlerFromC
@@ -152,7 +151,54 @@ io_store_eflags:
      push eax
      popfd
      ret
+init8259A:
+     mov  al, 011h
+     out  02h, al
+     call io_delay
 
+     out 0A0h, al
+     call io_delay
+
+     mov al, 020h
+     out 021h, al
+     call io_delay
+
+     mov  al, 028h
+     out  0A1h, al
+     call io_delay
+
+     mov  al, 004h
+     out  021h, al
+     call io_delay
+
+     mov  al, 002h
+     out  0A1h, al
+     call io_delay
+
+     mov  al, 002h
+     out  021h, al
+     call io_delay
+
+     out  0A1h, al
+     call io_delay
+
+     mov  al, 11111101b;允许接收键盘中断
+     out  021h, al
+     call io_delay
+
+     mov  al, 11111111b
+     out  0A1h, al
+     call io_delay
+
+     ret
+
+io_delay:
+     nop
+     nop
+     nop
+     nop
+     ret
+     
 %include "fontData.inc"
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32
