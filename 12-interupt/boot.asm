@@ -1,4 +1,4 @@
-; boot 把磁盘上从第二扇区开始到的内容装载到内存0x8200号地址，
+; boot 把磁盘上从第二扇区开始的内容装载到内存0x8200号地址，
 ; 在FAT文件系统中，第一个文件是从0号柱面33扇区开始的，也就是磁盘0x4200处
 ; 所以磁盘0x4200处的内容就应该位于内存0x8000+0x4200=0xc200号地址。
 ; kernel里加上ORG 0xc200，boot最后 要JMP 0xc200。
@@ -72,7 +72,7 @@ next:
 		MOV		CL,1            ; read 18 sector, set CL to 1 and DH to 1
 		ADD		DH,1            ;
 		CMP		DH,2
-		JB		readloop		; goto readloop 
+		JB		readloop		; goto readloop if finised head 0 and head 1 
 		MOV		DH,0            ; if DH(head) == 2, set it back to 0
 		ADD		CH,1            ; CH (sylinder) ++
 		CMP		CH,CYLS         ; 

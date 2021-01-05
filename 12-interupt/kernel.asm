@@ -1,5 +1,5 @@
 %include "pm.inc"
-org   0x9000
+org   0xc200
 
 jmp   LABEL_BEGIN
 
