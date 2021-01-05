@@ -39,7 +39,8 @@ readFloppy:
     INT          0x13          ; 调用BIOS中断实现磁盘读取功能
 
     JC           error
-
+    MOV          AL, 1
+    MOV		     [0x0ff0], AL  ;   一共加载了几个柱面, 暂时写成 1
     jmp          LOAD_ADDR
 
 error:
