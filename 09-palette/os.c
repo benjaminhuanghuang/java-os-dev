@@ -8,7 +8,7 @@ void set_palette(int start, int end, unsigned char *rgb);
 
 void CMain(void)
 {
-    int i;
+    char i;
     char *p = 0; // 初始化调色板
     init_palette();
     for (i = 0xa0000; i <= 0xaffff; i++)
