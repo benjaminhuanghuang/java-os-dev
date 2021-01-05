@@ -1,4 +1,4 @@
-_systemFont:
+systemFont:
 db 00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H ,00H
 db 00H ,00H ,070H ,088H ,04H ,054H ,054H ,04H ,04H ,054H ,024H ,088H ,070H ,00H ,00H ,00H
 db 00H ,00H ,070H ,0f8H ,0fcH ,0acH ,0acH ,0fcH ,0fcH ,0acH ,0dcH ,0f8H ,070H ,00H ,00H ,00H

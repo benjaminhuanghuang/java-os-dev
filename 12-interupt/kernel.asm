@@ -1,5 +1,4 @@
 %include "pm.inc"
-
 org   0x9000
 
 jmp   LABEL_BEGIN
@@ -90,61 +89,61 @@ C_CODE_ENTRY:
      %include "os.asm"
 
 
-_io_hlt:  ;void io_hlt(void);
+io_hlt:  ;void io_hlt(void);
      HLT
      RET
 
-_io_in8:
+io_in8:
      mov  edx, [esp + 4]
      mov  eax, 0
      in   al, dx
      RET
 
-_io_in16:
+io_in16:
      mov  edx, [esp + 4]
      mov  eax, 0
      in   ax, dx
      RET
      
- _io_in32:
+io_in32:
      mov edx, [esp + 4]
      in  eax, dx
      ret
 
-_io_out8:
+io_out8:
      mov edx, [esp + 4]
      mov al, [esp + 8]
      out dx, al
      ret
 
-_io_out16:
+io_out16:
      mov edx, [esp + 4]
      mov eax, [esp + 8]
      out dx, ax
      ret
 
-_io_out32:
+io_out32:
      mov edx, [esp + 4]
      mov eax, [esp + 8]
      out dx, eax
      ret
 
-_io_cli:
+io_cli:
      CLI
      RET
 
-_io_load_eflags:
+io_load_eflags:
      pushfd
      pop  eax
      ret
 
-_io_store_eflags:
+io_store_eflags:
      mov eax, [esp + 4]
      push eax
      popfd
      ret
 
-;%include "fontData.inc"
+%include "fontData.inc"
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32
 
