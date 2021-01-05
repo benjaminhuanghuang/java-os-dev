@@ -1,6 +1,6 @@
 org  0x7c00;
 
-LOAD_ADDR  EQU  0X8000
+LOAD_ADDR  EQU  0x9000
     jmp  entry
     db   0x90
     DB   "OSKERNEL"

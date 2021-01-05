@@ -1,8 +1,6 @@
 %include "pm.inc"
 
-org 0x8000
-
-VRAM_ADDRESS equ 0x000a0000
+org 0x9000
 
 jmp LABEL_BEGIN
 
@@ -47,13 +45,23 @@ LABEL_BEGIN:
     mov byte [LABEL_DESC_CODE32 + 4], al
     mov byte [LABEL_DESC_CODE32 + 7], ah
 
-    xor eax, eax
-    mov ax, ds
-    shl eax, 4
-    add eax, LABEL_GDT
-    mov dword [GdtPtr + 2], eax
+;set stack for C language
+    xor   eax, eax
+    mov   ax,  cs
+    shl   eax, 4
+    add   eax, LABEL_STACK
+    mov   word [LABEL_DESC_STACK + 2], ax
+    shr   eax, 16
+    mov   byte [LABEL_DESC_STACK + 4], al
+    mov   byte [LABEL_DESC_STACK + 7], ah
 
-    lgdt [GdtPtr]
+    xor   eax, eax
+    mov   ax, ds
+    shl   eax, 4
+    add   eax,  LABEL_GDT
+    mov   dword  [GdtPtr + 2], eax
+
+    lgdt  [GdtPtr]
 
     ; 关中断
     cli
@@ -80,6 +88,7 @@ LABEL_SEG_CODE32:
     mov ax, SelectorVram
     mov ds, ax
 
+C_CODE_ENTRY:
 %include "os.asm"
 
 ; void io_hlt(void)
@@ -145,8 +154,6 @@ _io_store_eflags:
     push eax
     popfd
     ret
-
-
 
 SegCode32Len equ $ - LABEL_SEG_CODE32
 
