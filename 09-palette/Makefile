@@ -12,7 +12,7 @@ os.o : os.c Makefile
 	gcc -fno-asynchronous-unwind-tables -m32 -c -s -o os.o os.c
 
 os1.asm : os.o Makefile
-	../objconv -fnasm -PE32 os.o os1.asm
+	../objconv -fnasm os.o os1.asm
 
 # remove the SECTION, global, extern... 
 os.asm : os1.asm Makefile
