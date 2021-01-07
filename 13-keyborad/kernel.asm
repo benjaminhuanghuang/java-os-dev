@@ -201,6 +201,15 @@ io_store_eflags:
      popfd
      ret
 
+io_sti:
+    sti
+    ret
+
+io_stihlt:
+    sti
+    hlt
+    ret
+
 %include "fontData.inc"
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32

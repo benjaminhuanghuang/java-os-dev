@@ -46,7 +46,19 @@ void intHandlerFromC(char *esp);
 void init_mouse_cursor(char *mouse, char b);
 static char mcursor[256];
 void initBootInfo(struct BOOTINFO *pBootInfo);
+//
+#define PORT_KEYDAT 0x0060
+#define PIC_OCW2    0x20
 
+struct KEYBUF {
+    unsigned char key_buf[32];
+    int next_r, next_w, len;
+};
+
+static struct KEYBUF keybuf;
+char charToHexVal(char c);
+char *charToHexStr(unsigned char c);
+static char keyval[5] = {'0', 'X', 0, 0, 0};
 
 void CMain(void)
 {
@@ -89,9 +101,21 @@ void CMain(void)
   //绘制鼠标
   putblock(vram, xsize, 16, 16, mx, my, mcursor, 16);
 
-  for (;;)
-  {
-    io_hlt();
+  int data = 0;
+  for(;;) {
+      io_cli();
+      if (keybuf.len == 0) {
+          io_stihlt();
+      } else {
+          data = keybuf.key_buf[keybuf.next_r];
+          keybuf.next_r = (keybuf.next_r + 1) % 32;
+          io_sti();
+        
+          char* pStr = charToHexStr(data);
+          static int showPos = 0;
+          showString(vram, xsize, showPos, 0, COL8_FFFFFF, pStr);
+          showPos += 32;           
+      }
   }
 }
 
@@ -268,15 +292,14 @@ void putblock(char *vram, int vxsize, int pxsize, int pysize, int px0,
 }
 
 void intHandlerFromC(char* esp) {
-    char*vram = bootInfo.vgaRam;
-    int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
     io_out8(PIC_OCW2, 0x21);
     unsigned char data = 0;
     data = io_in8(PORT_KEYDAT);
-    char* pStr = charToHexStr(data);
-    static int showPos = 0;
-    showString(vram, xsize, showPos, 0, COL8_FFFFFF, pStr);
-    showPos += 32;
+    if (keybuf.len < 32) {
+        keybuf.key_buf[keybuf.next_w] = data;
+        keybuf.len++;
+        keybuf.next_w = (keybuf.next_w+1)%32;
+    }
 }
 
 char   charToHexVal(char c) {
