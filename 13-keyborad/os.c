@@ -48,11 +48,12 @@ static char mcursor[256];
 void initBootInfo(struct BOOTINFO *pBootInfo);
 //
 #define PORT_KEYDAT 0x0060
-#define PIC_OCW2    0x20
+#define PIC_OCW2 0x20
 
-struct KEYBUF {
-    unsigned char key_buf[32];
-    int next_r, next_w, len;
+struct KEYBUF
+{
+  unsigned char key_buf[32];
+  int next_r, next_w, len;
 };
 
 static struct KEYBUF keybuf;
@@ -91,7 +92,7 @@ void CMain(void)
   showFont8(vram, 320, 8, 8, COL8_FFFFFF, systemFont + 'A' * 16);
   showFont8(vram, 320, 16, 8, COL8_FFFFFF, systemFont + 'B' * 16);
   showFont8(vram, 320, 24, 8, COL8_FFFFFF, systemFont + 'C' * 16);
-  
+
   //鼠标初始位置
   int mx = (xsize - 16) / 2;
   int my = (ysize - 28 - 16) / 2;
@@ -102,20 +103,25 @@ void CMain(void)
   putblock(vram, xsize, 16, 16, mx, my, mcursor, 16);
 
   int data = 0;
-  for(;;) {
-      io_cli();
-      if (keybuf.len == 0) {
-          io_stihlt();
-      } else {
-          data = keybuf.key_buf[keybuf.next_r];
-          keybuf.next_r = (keybuf.next_r + 1) % 32;
-          io_sti();
-        
-          char* pStr = charToHexStr(data);
-          static int showPos = 0;
-          showString(vram, xsize, showPos, 0, COL8_FFFFFF, pStr);
-          showPos += 32;           
-      }
+  for (;;)
+  {
+    io_cli();
+    if (keybuf.len == 0)
+    {
+      io_stihlt();
+    }
+    else
+    {
+      data = keybuf.key_buf[keybuf.next_r];
+      keybuf.next_r = (keybuf.next_r + 1) % 32;
+      io_sti();
+      keybuf.len--;
+      char *str = charToHexStr(data);
+      static int showXPos = 0;
+      static int showYPos = 0;
+      showString(vram, xsize, showXPos, 0, COL8_FFFFFF, str);
+      showXPos += 32;
+    }
   }
 }
 
@@ -291,31 +297,36 @@ void putblock(char *vram, int vxsize, int pxsize, int pysize, int px0,
   }
 }
 
-void intHandlerFromC(char* esp) {
-    io_out8(PIC_OCW2, 0x21);
-    unsigned char data = 0;
-    data = io_in8(PORT_KEYDAT);
-    if (keybuf.len < 32) {
-        keybuf.key_buf[keybuf.next_w] = data;
-        keybuf.len++;
-        keybuf.next_w = (keybuf.next_w+1)%32;
-    }
+void intHandlerFromC(char *esp)
+{
+  io_out8(PIC_OCW2, 0x21);
+  unsigned char data = 0;
+  data = io_in8(PORT_KEYDAT);
+  if (keybuf.len < 32)
+  {
+    keybuf.key_buf[keybuf.next_w] = data;
+    keybuf.len++;
+    keybuf.next_w = (keybuf.next_w + 1) % 32;
+  }
 }
 
-char   charToHexVal(char c) {
-    if (c >= 10) {
-        return 'A' + c - 10;
-    } 
+char charToHexVal(char c)
+{
+  if (c >= 10)
+  {
+    return 'A' + c - 10;
+  }
 
-    return '0' + c;
+  return '0' + c;
 }
 
-char*  charToHexStr(unsigned char c) {
-    int i = 0;
-    char mod = c % 16;
-    keyval[3] = charToHexVal(mod);
-    c = c / 16;
-    keyval[2] = charToHexVal(c);
+char *charToHexStr(unsigned char c)
+{
+  int i = 0;
+  char mod = c % 16;
+  keyval[3] = charToHexVal(mod);
+  c = c / 16;
+  keyval[2] = charToHexVal(c);
 
-    return keyval;
+  return keyval;
 }
