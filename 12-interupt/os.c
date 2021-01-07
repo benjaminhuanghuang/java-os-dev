@@ -269,11 +269,11 @@ void putblock(char *vram, int vxsize, int pxsize, int pysize, int px0,
 
 void intHandlerFromC(char *esp)
 {
-    // char* vram = bootInfo.vgaRam;
-    // int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
-    // boxfill8(vram, xsize, COL8_000000, 0,0,32*8 -1, 15);
+    char* vram = bootInfo.vgaRam;
+    int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+    boxfill8(vram, xsize, COL8_000000, 0,0,32*8 -1, 15);
     // showString(vram, xsize, 0, 0, COL8_FFFFFF, "PS/2 keyboard"); 
-    // for (;;) {
-    //     io_hlt();
-    // }
+    for (;;) {
+        io_hlt();
+    }
 }

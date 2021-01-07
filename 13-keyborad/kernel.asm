@@ -25,6 +25,11 @@ LABEL_IDT:
      Gate SelectorCode32, SpuriousHandler ,0 , DA_386IGate
 %endrep
 
+
+IdtLen  equ $ - LABEL_IDT
+IdtPtr  dw  IdtLen - 1
+        dd  0
+
 [SECTION  .s16]
 [BITS  16]
 LABEL_BEGIN:
@@ -37,8 +42,6 @@ LABEL_BEGIN:
      mov   al, 0x13
      mov   ah, 0
      int   0x10
-
-     call init8259A
 
      xor   eax, eax
      mov   ax,  cs
@@ -69,6 +72,17 @@ LABEL_BEGIN:
 
      cli   ;关中断
 
+     call init8259A
+
+ ; 准备IDT描述符
+     xor eax, eax
+     mov ax, ds
+     shl eax, 4
+     add eax, LABEL_IDT
+     mov dword [IdtPtr+2], eax
+     lidt [IdtPtr]
+
+ ; 打开A20     
      in    al,  92h
      or    al,  00000010b
      out   92h, al
@@ -78,6 +92,7 @@ LABEL_BEGIN:
      mov   cr0, eax
 
      jmp   dword  SelectorCode32: 0
+
 init8259A:
      mov  al, 011h
      out  02h, al
@@ -102,7 +117,7 @@ init8259A:
      out  0A1h, al
      call io_delay
 
-     mov  al, 003h
+     mov  al, 001h
      out  021h, al
      call io_delay
 
