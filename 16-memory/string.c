@@ -44,7 +44,8 @@ unsigned char*  intToHexStr(unsigned int d) {
           str[p] = 'A' + e - 10;
       } else {
           str[p] = '0' + e;
-      }         
+      } 
+      p--;        
   } 
 
   return str;

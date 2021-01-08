@@ -9,7 +9,7 @@ default :
 	nasm $*.asm -f bin -o $*.bin
 
 # Need -target x86_64-unknown-linux-gun to create ELF32 format on Mac
-os.o : os.c Makefile
+os.o : os.c *.c Makefile
 	gcc -target x86_64-unknown-linux-gun -m32 -O0 -s -c -o os.o os.c
 
 os1.asm : os.o Makefile
@@ -31,8 +31,9 @@ run :
 	qemu-system-i386 -fda $(IMAGE_NAME) -boot a
 
 clean:
+	rm os1.asm
+	rm os.asm
 	rm *.bin
 	rm *.img
 	rm *.o
-	rm os1.asm
-	rm os.asm
+
