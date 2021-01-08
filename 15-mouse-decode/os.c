@@ -104,7 +104,8 @@ void CMain(void)
 {
   initBootInfo(&bootInfo);
   unsigned char *vram = bootInfo.vgaRam;
-  int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+  xsize = bootInfo.screenX;
+  ysize = bootInfo.screenY;
 
   fifo8_init(&keyinfo, 32, keybuf);
   fifo8_init(&mouseinfo, 128, mousebuf);
@@ -510,16 +511,11 @@ void show_mouse_info(void)
   io_sti();
   data = fifo8_get(&mouseinfo);
 
-  char *pStr = charToHexStr(data);
-  static int mousePos = 16;
-
-  showString(vram, xsize, mousePos, 16, COL8_FFFFFF, pStr);
-
   if (mouse_decode(&mdec, data) != 0)
   {
     eraseMouse(vram);
-    // computeMousePosition(&mdec);
-    // drawMouse(vram);
+    computeMousePosition(&mdec);
+    drawMouse(vram);
   }
 }
 
@@ -610,7 +606,6 @@ void computeMousePosition(struct MOUSE_DEC *mdec)
 
 void eraseMouse(unsigned char *vram)
 {
-  show_sth();
   boxfill8(vram, xsize, COL8_008484, mx, my, mx + 15, my + 15);
 }
 
