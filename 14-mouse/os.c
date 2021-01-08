@@ -145,12 +145,10 @@ void CMain(void)
     }
     else if (fifo8_status(&keyinfo) != 0)
     {
-      showFont8(vram, 320, 8, 8, COL8_FFFFFF, systemFont + 'A' * 16);
       show_key_info();
     }
     else if (fifo8_status(&mouseinfo) != 0)
     {
-      showFont8(vram, 320, 8, 8, COL8_FFFFFF, systemFont + 'B' * 16);
       show_mouse_info();
     }
   }
@@ -326,7 +324,6 @@ void intHandlerForKeyboard(char *esp)
 */
 void intHandlerForMouse(char *esp)
 {
-  show_sth();
   unsigned char data;
   io_out8(PIC1_OCW2, 0x20);
   io_out8(PIC_OCW2, 0x20);

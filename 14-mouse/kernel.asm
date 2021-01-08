@@ -104,9 +104,9 @@ LABEL_BEGIN:
 
 init8259A:
      mov  al, 011h
-     out  02h, al
+     out  020h, al
      call io_delay
-
+  
      out 0A0h, al
      call io_delay
 
@@ -133,11 +133,11 @@ init8259A:
      out  0A1h, al
      call io_delay
 
-     mov  al, 11111101b;允许接收键盘中断
+     mov  al, 11111001b ;允许键盘中断
      out  021h, al
      call io_delay
 
-     mov  al, 11111111b
+     mov  al, 11101111b ;允许鼠标中断
      out  0A1h, al
      call io_delay
 
