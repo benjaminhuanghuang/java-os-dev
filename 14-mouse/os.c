@@ -49,7 +49,8 @@ static char mcursor[256];
 void initBootInfo(struct BOOTINFO *pBootInfo);
 //
 #define PORT_KEYDAT 0x0060
-#define PIC_OCW2 0x20
+#define  PIC_OCW2     0x20
+#define  PIC1_OCW2    0xA0
 
 /*
   FIFO
@@ -88,7 +89,9 @@ void init_keyboard(void);
 void enable_mouse();
 void intHandlerForKeyboard(char *esp);
 void intHandlerForMouse(char *esp);
+void show_key_info();
 void show_mouse_info();
+void show_sth();
 
 void CMain(void)
 {
@@ -138,13 +141,16 @@ void CMain(void)
     io_cli();
     if (fifo8_status(&keyinfo) + fifo8_status(&mouseinfo) == 0)
     {
-      io_sti();
+      io_stihlt();
     }
     else if (fifo8_status(&keyinfo) != 0)
     {
+      showFont8(vram, 320, 8, 8, COL8_FFFFFF, systemFont + 'A' * 16);
+      show_key_info();
     }
     else if (fifo8_status(&mouseinfo) != 0)
     {
+      showFont8(vram, 320, 8, 8, COL8_FFFFFF, systemFont + 'B' * 16);
       show_mouse_info();
     }
   }
@@ -216,47 +222,22 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c,
     }
 }
 
-void showFont8(unsigned char *vram, int xsize, int x, int y, char c, char *font)
-{
-  int i;
-  char d;
+void showFont8(unsigned char *vram, int xsize, int x, int y, char c, char* font) {
+    int i;
+    char d;
 
-  for (i = 0; i < 16; i++)
-  {
-    d = font[i];
-    if ((d & 0x80) != 0)
-    {
-      vram[(y + i) * xsize + x + 0] = c;
+    for (i = 0; i < 16; i++) {
+        d = font[i]; 
+        if ((d & 0x80) != 0) {vram[(y+i)*xsize + x + 0] = c;}  
+        if ((d & 0x40) != 0) {vram[(y+i)*xsize + x + 1] = c;}  
+        if ((d & 0x20) != 0) {vram[(y+i)*xsize + x + 2] = c;} 
+        if ((d & 0x10) != 0) {vram[(y+i)*xsize + x + 3] = c;} 
+        if ((d & 0x08) != 0) {vram[(y+i)*xsize + x + 4] = c;} 
+        if ((d & 0x04) != 0) {vram[(y+i)*xsize + x + 5] = c;} 
+        if ((d & 0x02) != 0) {vram[(y+i)*xsize + x + 6] = c;} 
+        if ((d & 0x01) != 0) {vram[(y+i)*xsize + x + 7] = c;} 
     }
-    if ((d & 0x40) != 0)
-    {
-      vram[(y + i) * xsize + x + 1] = c;
-    }
-    if ((d & 0x20) != 0)
-    {
-      vram[(y + i) * xsize + x + 2] = c;
-    }
-    if ((d & 0x10) != 0)
-    {
-      vram[(y + i) * xsize + x + 3] = c;
-    }
-    if ((d & 0x08) != 0)
-    {
-      vram[(y + i) * xsize + x + 4] = c;
-    }
-    if ((d & 0x04) != 0)
-    {
-      vram[(y + i) * xsize + x + 5] = c;
-    }
-    if ((d & 0x02) != 0)
-    {
-      vram[(y + i) * xsize + x + 6] = c;
-    }
-    if ((d & 0x01) != 0)
-    {
-      vram[(y + i) * xsize + x + 7] = c;
-    }
-  }
+
 }
 
 void showString(unsigned char *vram, int xsize, int x, int y, char color, unsigned char *s)
@@ -324,6 +305,7 @@ void putblock(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0,
 
 void intHandlerFromC(char *esp)
 {
+
 }
 
 /*
@@ -344,11 +326,13 @@ void intHandlerForKeyboard(char *esp)
 */
 void intHandlerForMouse(char *esp)
 {
+  show_sth();
+  unsigned char data;
+  io_out8(PIC1_OCW2, 0x20);
   io_out8(PIC_OCW2, 0x20);
-  unsigned char data = 0;
+  
   data = io_in8(PORT_KEYDAT);
-  fifo8_put(&keyinfo, data);
-  return;
+  fifo8_put(&mouseinfo, data);
 }
 
 unsigned char charToHexVal(unsigned char c)
@@ -470,6 +454,24 @@ int fifo8_status(struct FIFO8 *fifo)
   return fifo->size - fifo->free;
 }
 
+
+
+void show_key_info()
+{
+  unsigned char *vram = bootInfo.vgaRam;
+  int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+  unsigned char data = 0;
+
+  io_sti();
+  data = fifo8_get(&keyinfo);
+  unsigned char *pStr = charToHexStr(data);
+  static int showXPos = 0;
+  static int showYPos = 0;
+  showString(vram, xsize, showXPos, 0, COL8_FFFFFF, pStr);
+  showXPos += 32;
+}
+
+
 void show_mouse_info()
 {
   unsigned char *vram = bootInfo.vgaRam;
@@ -485,4 +487,11 @@ void show_mouse_info()
     showString(vram, xsize, mousePos, 16, COL8_FFFFFF, pStr);
     mousePos += 32;
   }
+}
+
+void show_sth()
+{
+  unsigned char *vram = bootInfo.vgaRam;
+  int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+  showFont8(vram, 320, 20, 20, COL8_FFFFFF, systemFont + 'p' * 16);
 }
