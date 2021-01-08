@@ -5,6 +5,8 @@
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=16
 
+https://github.com/MingYueRuYa/butterfly_os/blob/show_memory/write_vga_show_memory.c
+
 
 使用15h中断。其具体步骤如下：
 
@@ -58,3 +60,15 @@ LABEL_MEM_CHK_FAIL:
 MemChkBuf 是256字节的缓冲区，es:di将指向它，BIOS将会把地址范围描述符结构体写入这块内存。
 每次调用一次int 15h中断，BIOS成功填充地址描述符后后，我们把dwMCRNumber 这个变量加1.
 
+```
+get_memory_block_count:
+        mov  eax, [dwMCRNumber]
+        ret
+```
+
+
+## Main 
+```
+  int memCnt = get_memory_block_count();
+  struct AddrRangeDesc *memDesc = (struct AddrRangeDesc *)get_adr_buffer();
+````

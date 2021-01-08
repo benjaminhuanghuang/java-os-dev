@@ -47,7 +47,28 @@ LABEL_BEGIN:
      mov   es, ax
      mov   ss, ax
      mov   sp, 0100h
+     
+; calculate memory
+ComputeMemory:
+    mov ebx, 0
+    mov di, MemChkBuf
+.loop:
+    mov eax, 0E820h
+    mov ecx, 20
+    mov edx, 0534D4150h  ; "SMAP"
+    int 15h              ; BIOS 15
 
+    jc LABEL_MEM_CHK_FAIL   ; check CF
+    add di, 20
+    inc dword [dwMCRNumber]
+    cmp ebx, 0    ; ebx == 0 means all memory blocks are filled
+    jne .loop
+    jmp LABEL_MEM_CHK_OK
+LABEL_MEM_CHK_FAIL:
+    mov dword [dwMCRNumber], 0
+LABEL_MEM_CHK_OK:
+
+; set vga    
      mov   al, 0x13
      mov   ah, 0
      int   0x10
@@ -268,9 +289,28 @@ io_stihlt:
     hlt
     ret
 
+
+get_memory_block_count:
+    mov eax, [dwMCRNumber]
+    ret
+
+get_adr_buffer:
+    mov eax, MemChkBuf
+    ret
+
+
 %include "fontData.inc"
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32
+
+[SECTION .data]
+ALIGN 32
+[BITS 32]
+MemChkBuf:  
+    times 256 db 0
+dwMCRNumber:
+    dd 0
+
 
 [SECTION .gs]
 ALIGN 32

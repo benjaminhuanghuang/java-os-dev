@@ -29,6 +29,7 @@ void io_store_eflags(int eflags);
 
 unsigned char charToHexVal(unsigned char c);
 unsigned char *charToHexStr(unsigned char c);
+unsigned char*  intToHexStr(unsigned int d);
 
 /* 
   Graphics
@@ -125,4 +126,28 @@ void show_mouse_info(unsigned char *vram , int xsize);
 
 static struct FIFO8 mousefifo;
 static struct MOUSE_DEC mdec;
+
+
+/*
+  Memory
+*/
+
+struct AddrRangeDesc {
+  unsigned int  baseAddrLow ;  //内存基地址的低32位
+  unsigned int  baseAddrHigh;  //内存基地址的高32位
+  unsigned int  lengthLow;     //内存块长度的低32位
+  unsigned int  lengthHigh;    //内存块长度的高32位
+  unsigned int  type;          //描述内存块的类型
+};
+/*
+  type 等于1，表示当前内存块可以被内核使用。
+  type 等于2，表示当前内存块已经被占用，系统内核绝对不能使用，
+  type 等于3，保留给未来使用，内核也不能用当前内存块。
+*/
+
+int get_memory_block_count(void);   /* asm func */
+char *get_adr_buffer(void);         /* asm func */
+void showMemoryInfo(struct AddrRangeDesc *desc, char *vram, int page,
+                    int xsize, int color);
+
 #endif

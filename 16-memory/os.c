@@ -33,6 +33,10 @@ void CMain(void)
   io_sti();
   enable_mouse(&mdec);
 
+  int memCount = get_memory_block_count();
+  unsigned char *pStr = intToHexStr(memCount);
+  showString(binfo->vgaRam, binfo->screenX , 0 , 0 , COL8_FFFFFF, pStr);
+
   int data = 0;
   for (;;)
   {

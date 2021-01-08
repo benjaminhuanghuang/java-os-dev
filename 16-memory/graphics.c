@@ -116,9 +116,11 @@ void putblock(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0,
 void showFont8(unsigned char *vram, int xsize, int x, int y, char c, char *font)
 {
   int i;
-	char *p, d /* data */;
+	unsigned char *p;
+  char d /* data */;
 	for (i = 0; i < 16; i++) {
-		p = vram + (y + i) * xsize + x;	d = font[i];
+		p = vram + (y + i) * xsize + x;	
+    d = font[i];
 		if ((d & 0x80) != 0) { p[0] = c; }
 		if ((d & 0x40) != 0) { p[1] = c; }
 		if ((d & 0x20) != 0) { p[2] = c; }
