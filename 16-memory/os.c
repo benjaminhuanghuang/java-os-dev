@@ -47,7 +47,7 @@ void CMain(void)
     }
     else if (fifo8_status(&keyfifo) != 0)
     {
-      show_key_info(binfo->vgaRam, binfo->screenX);
+      //show_key_info(binfo->vgaRam, binfo->screenX);
     }
     else if (fifo8_status(&mousefifo) != 0)
     {

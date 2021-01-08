@@ -33,7 +33,7 @@ https://github.com/MingYueRuYa/butterfly_os/blob/show_memory/write_vga_show_memo
 ```
 type 等于1，表示当前内存块可以被内核使用。
 type 等于2，表示当前内存块已经被占用，系统内核绝对不能使用，
-type等于3，保留给未来使用，内核也不能用当前内存块。
+type 等于3，保留给未来使用，内核也不能用当前内存块。
 
 ## Check memory
 ```

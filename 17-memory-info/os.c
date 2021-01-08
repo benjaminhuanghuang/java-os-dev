@@ -34,10 +34,13 @@ void CMain(void)
   enable_mouse(&mdec);
 
   int memCount = get_memory_block_count();
+  unsigned char *pStr = intToHexStr(memCount);
+  showString(binfo->vgaRam, binfo->screenX , 0 , 0 , COL8_FFFFFF, pStr);
+
   struct AddrRangeDesc* memDesc = (struct AddrRangeDesc*)get_adr_buffer();
 
   int data = 0;
-  int count = 0;
+  static int count = 0;
   for (;;)
   {
     io_cli();
@@ -54,7 +57,7 @@ void CMain(void)
       if (data == 0x1C) {
         // Enter key
         showMemoryInfo( memDesc + count, binfo->vgaRam, count, binfo->screenX, COL8_FFFFFF);
-        count = (count+1);
+        count++;
         if (count > memCount) {
           count = 0;
         }

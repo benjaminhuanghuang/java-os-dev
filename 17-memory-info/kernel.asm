@@ -307,7 +307,7 @@ SegCode32Len   equ  $ - LABEL_SEG_CODE32
 ALIGN 32
 [BITS 32]
 MemChkBuf:  
-    times 256 db 0
+    times 512 db 0
 dwMCRNumber:
     dd 0
 
