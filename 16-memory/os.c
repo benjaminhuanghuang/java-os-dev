@@ -1,8 +1,6 @@
 #include "os.h"
 
-
 void initBootInfo(struct BOOTINFO *pBootInfo);
-
 
 void CMain(void)
 {
@@ -10,14 +8,12 @@ void CMain(void)
   struct BOOTINFO bootInfo;
   initBootInfo(&bootInfo);
   struct BOOTINFO *binfo = &bootInfo;
-  
-	unsigned char s[40], mcursor[256], keybuf[32], mousebuf[128];
+
+  unsigned char s[40], mcursor[256], keybuf[32], mousebuf[128];
   fifo8_init(&keyfifo, 32, keybuf);
   fifo8_init(&mousefifo, 128, mousebuf);
-  
-  int mx, my, i, j;
-  struct MOUSE_DEC mdec;
 
+  int mx, my, i, j;
 
   init_keyboard();
 
@@ -51,7 +47,34 @@ void CMain(void)
     }
     else if (fifo8_status(&mousefifo) != 0)
     {
-      show_mouse_info(binfo->vgaRam, binfo->screenX);
+      data = fifo8_get(&mousefifo);
+      io_sti();
+
+      if (mouse_decode(&mdec, data) != 0)
+      {
+        //show_mouse_info(binfo->vgaRam, binfo->screenX);
+        // erease the mosue
+        boxfill8(binfo->vgaRam, binfo->screenX, COL8_008484, mx, my, mx + 15, my + 15);
+        mx += mdec.x;
+        my += mdec.y;
+        if (mx < 0)
+        {
+          mx = 0;
+        }
+        if (my < 0)
+        {
+          my = 0;
+        }
+        if (mx > binfo->screenX - 16)
+        {
+          mx = binfo->screenX - 16;
+        }
+        if (my > binfo->screenY - 16)
+        {
+          my = binfo->screenY - 16;
+        }
+        putblock(binfo->vgaRam, binfo->screenX, 16, 16, mx, my, mcursor, 16);
+      }
     }
   }
 }
@@ -62,7 +85,6 @@ void initBootInfo(struct BOOTINFO *pBootInfo)
   pBootInfo->screenX = 320;
   pBootInfo->screenY = 200;
 }
-
 
 #include "string.c"
 #include "graphics.c"

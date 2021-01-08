@@ -124,5 +124,5 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 void show_mouse_info(unsigned char *vram , int xsize);
 
 static struct FIFO8 mousefifo;
-
+static struct MOUSE_DEC mdec;
 #endif
