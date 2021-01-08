@@ -170,7 +170,6 @@ C_CODE_ENTRY:
 
 _SpuriousHandler:
      SpuriousHandler equ _SpuriousHandler - $$
-     call intHandlerFromC
      iretd
 
 _KeyBoardhandler:
@@ -180,7 +179,7 @@ keyBoardHandler equ _KeyBoardhandler - $$
     pushad
     mov eax, esp
     push eax
-    call intHandlerForKeyboard
+    call intHandler21
 
     pop eax
     mov esp, eax
@@ -196,7 +195,7 @@ mouseHandler equ _MouseHandler - $$
     pushad
     mov eax, esp
     push eax
-    call intHandlerForMouse
+    call intHandler2C
 
     pop eax
     mov esp, eax
