@@ -16,10 +16,10 @@
 #define COL8_848484 15
 
 extern void io_hlt(void);
-
+extern void io_sti(void);
 extern void io_cli(void);
 extern void io_out8(int port, int data);
-
+extern int io_in8(int port);
 extern int io_load_eflags(void);
 extern void io_store_eflags(int eflags);
 
@@ -30,18 +30,19 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x, int y, int
 extern char systemFont[];
 struct BOOTINFO
 {
-  char *vgaRam;
+  unsigned char *vgaRam;
   short screenX, screenY;
 };
 static struct BOOTINFO bootInfo;
 
-void showFont8(char *vram, int xsize, int x, int y, char c, char *font);
-void showString(char *vram, int xsize,
+void showFont8(unsigned char *vram, int xsize, int x, int y, char c, char *font);
+void showString(unsigned char *vram, int xsize,
                 int x, int y, char color,
                 unsigned char *s);
 
-void putblock(char *vram, int vxsize, int pxsize,
+void putblock(unsigned char *vram, int vxsize, int pxsize,
               int pysize, int px0, int py0, char *buf, int bxsize);
+
 void intHandlerFromC(char *esp);
 void init_mouse_cursor(char *mouse, char b);
 static char mcursor[256];
@@ -50,22 +51,55 @@ void initBootInfo(struct BOOTINFO *pBootInfo);
 #define PORT_KEYDAT 0x0060
 #define PIC_OCW2 0x20
 
-struct KEYBUF
+/*
+  FIFO
+*/
+struct FIFO8
 {
-  unsigned char key_buf[32];
-  int next_r, next_w, len;
+  unsigned char *buf;
+  int p, q, size, free, flags;
 };
 
-static struct KEYBUF keybuf;
-char charToHexVal(char c);
-char *charToHexStr(unsigned char c);
-static char keyval[5] = {'0', 'X', 0, 0, 0};
+static struct FIFO8 keyinfo;
+static struct FIFO8 mouseinfo;
+static unsigned char keybuf[32];
+static unsigned char mousebuf[128];
+
+struct MOUSE_DEC
+{
+  unsigned char buf[3], phase;
+  int x, y, btn;
+};
+
+static struct MOUSE_DEC mdec;
+
+void fifo8_init(struct FIFO8 *fifo, int size, unsigned char *buf);
+int fifo8_put(struct FIFO8 *fifo, unsigned char data);
+int fifo8_get(struct FIFO8 *fifo);
+int fifo8_status(struct FIFO8 *fifo);
+
+void init_keyboard(void);
+
+unsigned char charToHexVal(unsigned char c);
+unsigned char *charToHexStr(unsigned char c);
+static unsigned char keyval[5] = {'0', 'X', 0, 0, 0};
+
+void init_keyboard(void);
+void enable_mouse();
+void intHandlerForKeyboard(char *esp);
+void intHandlerForMouse(char *esp);
+void show_mouse_info();
 
 void CMain(void)
 {
   initBootInfo(&bootInfo);
-  char *vram = bootInfo.vgaRam;
+  unsigned char *vram = bootInfo.vgaRam;
   int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+
+  fifo8_init(&keyinfo, 32, keybuf);
+  fifo8_init(&mouseinfo, 128, mousebuf);
+
+  init_keyboard();
 
   init_palette();
 
@@ -87,12 +121,6 @@ void CMain(void)
   boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize - 3, xsize - 4, ysize - 3);
   boxfill8(vram, xsize, COL8_FFFFFF, xsize - 3, ysize - 24, xsize - 3, ysize - 3);
 
-  // draw text
-  // showFont8(p, 320, 50, 50, 0, fontA);
-  showFont8(vram, 320, 8, 8, COL8_FFFFFF, systemFont + 'A' * 16);
-  showFont8(vram, 320, 16, 8, COL8_FFFFFF, systemFont + 'B' * 16);
-  showFont8(vram, 320, 24, 8, COL8_FFFFFF, systemFont + 'C' * 16);
-
   //鼠标初始位置
   int mx = (xsize - 16) / 2;
   int my = (ysize - 28 - 16) / 2;
@@ -102,32 +130,29 @@ void CMain(void)
   //绘制鼠标
   putblock(vram, xsize, 16, 16, mx, my, mcursor, 16);
 
+  enable_mouse();
+
   int data = 0;
   for (;;)
   {
     io_cli();
-    if (keybuf.len == 0)
+    if (fifo8_status(&keyinfo) + fifo8_status(&mouseinfo) == 0)
     {
-      io_stihlt();
-    }
-    else
-    {
-      data = keybuf.key_buf[keybuf.next_r];
-      keybuf.next_r = (keybuf.next_r + 1) % 32;
       io_sti();
-      keybuf.len--;
-      char *str = charToHexStr(data);
-      static int showXPos = 0;
-      static int showYPos = 0;
-      showString(vram, xsize, showXPos, 0, COL8_FFFFFF, str);
-      showXPos += 32;
+    }
+    else if (fifo8_status(&keyinfo) != 0)
+    {
+    }
+    else if (fifo8_status(&mouseinfo) != 0)
+    {
+      show_mouse_info();
     }
   }
 }
 
 void initBootInfo(struct BOOTINFO *pBootInfo)
 {
-  pBootInfo->vgaRam = (char *)0xa0000;
+  pBootInfo->vgaRam = (unsigned char *)0xa0000;
   pBootInfo->screenX = 320;
   pBootInfo->screenY = 200;
 }
@@ -191,7 +216,7 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c,
     }
 }
 
-void showFont8(char *vram, int xsize, int x, int y, char c, char *font)
+void showFont8(unsigned char *vram, int xsize, int x, int y, char c, char *font)
 {
   int i;
   char d;
@@ -234,7 +259,7 @@ void showFont8(char *vram, int xsize, int x, int y, char c, char *font)
   }
 }
 
-void showString(char *vram, int xsize, int x, int y, char color, unsigned char *s)
+void showString(unsigned char *vram, int xsize, int x, int y, char color, unsigned char *s)
 {
   for (; *s != 0x00; s++)
   {
@@ -284,7 +309,7 @@ void init_mouse_cursor(char *mouse, char bc)
   }
 }
 
-void putblock(char *vram, int vxsize, int pxsize, int pysize, int px0,
+void putblock(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0,
               int py0, char *buf, int bxsize)
 {
   int x, y;
@@ -299,18 +324,34 @@ void putblock(char *vram, int vxsize, int pxsize, int pysize, int px0,
 
 void intHandlerFromC(char *esp)
 {
-  io_out8(PIC_OCW2, 0x21);
-  unsigned char data = 0;
-  data = io_in8(PORT_KEYDAT);
-  if (keybuf.len < 32)
-  {
-    keybuf.key_buf[keybuf.next_w] = data;
-    keybuf.len++;
-    keybuf.next_w = (keybuf.next_w + 1) % 32;
-  }
 }
 
-char charToHexVal(char c)
+/*
+ interupt handler for keyboard
+ read data and put it to keyboard FIFO buffer
+*/
+void intHandlerForKeyboard(char *esp)
+{
+  io_out8(PIC_OCW2, 0x20);
+  unsigned char data = 0;
+  data = io_in8(PORT_KEYDAT);
+  fifo8_put(&keyinfo, data);
+}
+
+/*
+ interupt handler for mouse
+ read data and put it to mouse FIFO buffer
+*/
+void intHandlerForMouse(char *esp)
+{
+  io_out8(PIC_OCW2, 0x20);
+  unsigned char data = 0;
+  data = io_in8(PORT_KEYDAT);
+  fifo8_put(&keyinfo, data);
+  return;
+}
+
+unsigned char charToHexVal(unsigned char c)
 {
   if (c >= 10)
   {
@@ -320,7 +361,7 @@ char charToHexVal(char c)
   return '0' + c;
 }
 
-char *charToHexStr(unsigned char c)
+unsigned char *charToHexStr(unsigned char c)
 {
   int i = 0;
   char mod = c % 16;
@@ -329,4 +370,119 @@ char *charToHexStr(unsigned char c)
   keyval[2] = charToHexVal(c);
 
   return keyval;
+}
+#define PORT_KEYSTA 0x0064
+#define PORT_KEYCMD 0x0064
+#define KEYSTA_SEND_NOTREADY 0x02
+#define KEYCMD_WRITE_MODE 0x60
+#define KBC_MODE 0x47
+
+// 检查是否可以接收数据
+void wait_KBC_sendready()
+{
+  for (;;)
+  {
+    if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0)
+    {
+      break;
+    }
+  }
+}
+/*
+  鼠标控制电路包含在键盘控制电路里，如果键盘控制电路的初始化正常完成，
+  鼠标电路控制器的激活也就完成了。
+*/
+void init_keyboard(void)
+{
+  wait_KBC_sendready();
+  io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
+  wait_KBC_sendready();
+  // 紧接着向端口0x60发送一个字节的数据0x47, 这个数据要求键盘电路启动鼠标模式，
+  // 这样，鼠标硬件所产生的数据信息，都可以通过键盘电路端口0x60读到，
+  io_out8(PORT_KEYDAT, KBC_MODE);
+}
+
+#define KEYCMD_SENDTO_MOUSE 0xd4
+#define MOUSECMD_ENABLE 0xf4
+
+void enable_mouse(void)
+{
+  wait_KBC_sendready();
+  io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
+  wait_KBC_sendready();
+  io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
+  return;
+}
+
+/**
+ *  FIFO 8
+ */
+void fifo8_init(struct FIFO8 *fifo, int size, unsigned char *buf)
+{
+  fifo->size = size;
+  fifo->buf = buf;
+  fifo->free = size;
+  fifo->flags = 0;
+  fifo->p = 0;
+  fifo->q = 0;
+  return;
+}
+
+#define FLAGS_OVERRUN 0x0001
+int fifo8_put(struct FIFO8 *fifo, unsigned char data)
+{
+  if (fifo->free == 0)
+  {
+    fifo->flags |= FLAGS_OVERRUN;
+    return -1;
+  }
+
+  fifo->buf[fifo->p] = data;
+  fifo->p++;
+  if (fifo->p == fifo->size)
+  {
+    fifo->p = 0;
+  }
+  fifo->free--;
+  return 0;
+}
+
+int fifo8_get(struct FIFO8 *fifo)
+{
+  int data;
+  if (fifo->free == fifo->size)
+  {
+    return -1;
+  }
+
+  data = fifo->buf[fifo->q];
+  fifo->q++;
+  if (fifo->q == fifo->size)
+  {
+    fifo->q = 0;
+  }
+  fifo->free++;
+  return data;
+}
+
+int fifo8_status(struct FIFO8 *fifo)
+{
+  return fifo->size - fifo->free;
+}
+
+void show_mouse_info()
+{
+  unsigned char *vram = bootInfo.vgaRam;
+  int xsize = bootInfo.screenX, ysize = bootInfo.screenY;
+  unsigned char data = 0;
+
+  io_sti();
+  data = fifo8_get(&mouseinfo);
+  char *pStr = charToHexStr(data);
+  static int mousePos = 16;
+  if (mousePos <= 256)
+  {
+    showString(vram, xsize, mousePos, 16, COL8_FFFFFF, pStr);
+    mousePos += 32;
+  }
 }

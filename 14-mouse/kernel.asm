@@ -21,10 +21,19 @@ SelectorStack     equ   LABEL_DESC_STACK  -  LABEL_GDT
 SelectorVram      equ   LABEL_DESC_VRAM   -  LABEL_GDT
 
 LABEL_IDT:
-%rep 255
-     Gate SelectorCode32, SpuriousHandler ,0 , DA_386IGate
+%rep 33 
+    Gate SelectorCode32, SpuriousHandler, 0, DA_386IGate
 %endrep
 
+.021h:
+    Gate SelectorCode32, keyBoardHandler, 0, DA_386IGate
+
+%rep 10
+    Gate SelectorCode32, SpuriousHandler, 0, DA_386IGate
+%endrep
+
+.2Ch:
+    Gate SelectorCode32, mouseHandler, 0, DA_386IGate
 
 IdtLen  equ $ - LABEL_IDT
 IdtPtr  dw  IdtLen - 1
@@ -157,10 +166,45 @@ LABEL_SEG_CODE32:
 C_CODE_ENTRY:
      %include "os.asm"
      jmp $
+
+
 _SpuriousHandler:
      SpuriousHandler equ _SpuriousHandler - $$
      call intHandlerFromC
      iretd
+
+_KeyBoardhandler:
+keyBoardHandler equ _KeyBoardhandler - $$
+    push es
+    push ds
+    pushad
+    mov eax, esp
+    push eax
+    call intHandlerForKeyboard
+
+    pop eax
+    mov esp, eax
+    popad
+    pop ds 
+    pop es
+    iretd
+
+_MouseHandler:
+mouseHandler equ _MouseHandler - $$
+    push es
+    push ds
+    pushad
+    mov eax, esp
+    push eax
+    call intHandlerForMouse
+
+    pop eax
+    mov esp, eax
+    popad
+    pop ds 
+    pop es
+    iretd
+
 
 io_hlt:  ;void io_hlt(void);
      HLT
