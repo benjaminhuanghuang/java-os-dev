@@ -116,44 +116,19 @@ void putblock(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0,
 void showFont8(unsigned char *vram, int xsize, int x, int y, char c, char *font)
 {
   int i;
-  char d;
-
-  for (i = 0; i < 16; i++)
-  {
-    d = font[i];
-    if ((d & 0x80) != 0)
-    {
-      vram[(y + i) * xsize + x + 0] = c;
-    }
-    if ((d & 0x40) != 0)
-    {
-      vram[(y + i) * xsize + x + 1] = c;
-    }
-    if ((d & 0x20) != 0)
-    {
-      vram[(y + i) * xsize + x + 2] = c;
-    }
-    if ((d & 0x10) != 0)
-    {
-      vram[(y + i) * xsize + x + 3] = c;
-    }
-    if ((d & 0x08) != 0)
-    {
-      vram[(y + i) * xsize + x + 4] = c;
-    }
-    if ((d & 0x04) != 0)
-    {
-      vram[(y + i) * xsize + x + 5] = c;
-    }
-    if ((d & 0x02) != 0)
-    {
-      vram[(y + i) * xsize + x + 6] = c;
-    }
-    if ((d & 0x01) != 0)
-    {
-      vram[(y + i) * xsize + x + 7] = c;
-    }
-  }
+	char *p, d /* data */;
+	for (i = 0; i < 16; i++) {
+		p = vram + (y + i) * xsize + x;	d = font[i];
+		if ((d & 0x80) != 0) { p[0] = c; }
+		if ((d & 0x40) != 0) { p[1] = c; }
+		if ((d & 0x20) != 0) { p[2] = c; }
+		if ((d & 0x10) != 0) { p[3] = c; }
+		if ((d & 0x08) != 0) { p[4] = c; }
+		if ((d & 0x04) != 0) { p[5] = c; } 
+		if ((d & 0x02) != 0) { p[6] = c; }
+		if ((d & 0x01) != 0) { p[7] = c; }
+	}
+	return;
 }
 
 void showString(unsigned char *vram, int xsize, int x, int y, char color, unsigned char *s)
