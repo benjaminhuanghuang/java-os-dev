@@ -242,7 +242,7 @@ void init_mouse_cursor(char *mouse, char bc)
       {
         mouse[y * 16 + x] = COL8_FFFFFF;
       }
-      else if (cursor[y][x] == '0')
+      else if (cursor[y][x] == 'O')
       {
         mouse[y * 16 + x] = COL8_000000;
       }
