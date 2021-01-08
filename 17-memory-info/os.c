@@ -34,10 +34,10 @@ void CMain(void)
   enable_mouse(&mdec);
 
   int memCount = get_memory_block_count();
-  unsigned char *pStr = intToHexStr(memCount);
-  showString(binfo->vgaRam, binfo->screenX , 0 , 0 , COL8_FFFFFF, pStr);
+  struct AddrRangeDesc* memDesc = (struct AddrRangeDesc*)get_adr_buffer();
 
   int data = 0;
+  int count = 0;
   for (;;)
   {
     io_cli();
@@ -47,7 +47,18 @@ void CMain(void)
     }
     else if (fifo8_status(&keyfifo) != 0)
     {
-      show_key_info(binfo->vgaRam, binfo->screenX);
+      //show_key_info(binfo->vgaRam, binfo->screenX);
+      io_sti();
+      data = fifo8_get(&keyfifo);
+
+      if (data == 0x1C) {
+        // Enter key
+        showMemoryInfo( memDesc + count, binfo->vgaRam, count, binfo->screenX, COL8_FFFFFF);
+        count = (count+1);
+        if (count > memCount) {
+          count = 0;
+        }
+      }
     }
     else if (fifo8_status(&mousefifo) != 0)
     {
@@ -95,3 +106,4 @@ void initBootInfo(struct BOOTINFO *pBootInfo)
 #include "fifo.c"
 #include "keyboard.c"
 #include "mouse.c"
+#include "memory.c"

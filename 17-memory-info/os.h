@@ -147,7 +147,7 @@ struct AddrRangeDesc {
 
 int get_memory_block_count(void);   /* asm func */
 char *get_adr_buffer(void);         /* asm func */
-void showMemoryInfo(struct AddrRangeDesc *desc, char *vram, int page,
+void showMemoryInfo(struct AddrRangeDesc *desc, unsigned char *vram, int page,
                     int xsize, int color);
 
 #endif
