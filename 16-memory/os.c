@@ -3,8 +3,6 @@
 
 void initBootInfo(struct BOOTINFO *pBootInfo);
 
-struct FIFO8 mousefifo;
-struct FIFO8 keyfifo;
 
 void CMain(void)
 {

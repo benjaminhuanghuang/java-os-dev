@@ -66,7 +66,7 @@ void draw_desktop(unsigned char *vram, int x, int y);
 /*
   Font
 */
-char systemFont[];
+extern char systemFont[];
 
 /*
   FIFO
@@ -109,7 +109,7 @@ void intHandler21(int *esp);
 void wait_KBC_sendready(void);
 void show_key_info(unsigned char *vram , int xsize);
 
-extern struct FIFO8 keyfifo;
+static struct FIFO8 keyfifo;
 
 /*
   Mouse
@@ -123,6 +123,6 @@ void enable_mouse(struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 void show_mouse_info(unsigned char *vram , int xsize);
 
-extern struct FIFO8 mousefifo;
+static struct FIFO8 mousefifo;
 
 #endif
