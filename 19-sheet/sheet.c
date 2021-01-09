@@ -25,13 +25,13 @@ struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram,
 	return ctl;
 }
 
-#define SHEET_USE 1
 struct SHEET *sheet_alloc(struct SHTCTL *ctl)
 {
 	struct SHEET *sht;
 	int i;
 	for (i = 0; i < MAX_SHEETS; i++)
 	{
+		// find an unused sheet
 		if (ctl->sheets0[i].flags == 0)
 		{
 			sht = &ctl->sheets0[i];

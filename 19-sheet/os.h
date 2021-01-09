@@ -194,17 +194,18 @@ struct SHEET {
 
 struct SHTCTL {
   //
-	unsigned char *vram, *map;
+	unsigned char *vram;
   // top = how many sheets
 	int xsize, ysize, top;
   // ordered sheets
 	struct SHEET *sheets[MAX_SHEETS];
 	struct SHEET sheets0[MAX_SHEETS];
 };
-
+// apply a new sheet from the sheet controller 
 struct SHEET *sheet_alloc(struct SHTCTL *ctl);
+// init the controller
 struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram,int xsize, int ysize);
-
+// bind memory block to sheet
 void sheet_setbuf(struct SHEET *sht, unsigned char *buf, int xsize, int ysize, int col_inv);
 void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height);
 int sheet_refresh(struct SHTCTL *ctl);
