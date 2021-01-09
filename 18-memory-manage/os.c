@@ -2,6 +2,8 @@
 
 void initBootInfo(struct BOOTINFO *pBootInfo);
 
+struct MEMMAN *memman = (struct MEMMAN *)0x100000;
+
 void CMain(void)
 {
   //struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
@@ -35,10 +37,22 @@ void CMain(void)
 
   int memCount = get_memory_block_count();
   unsigned char *pStr = intToHexStr(memCount);
-  showString(binfo->vgaRam, binfo->screenX , 0 , 0 , COL8_FFFFFF, pStr);
+  showString(binfo->vgaRam, binfo->screenX, 0, 0, COL8_FFFFFF, pStr);
 
-  struct AddrRangeDesc* memDesc = (struct AddrRangeDesc*)get_adr_buffer();
+  struct AddrRangeDesc *memDesc = (struct AddrRangeDesc *)get_adr_buffer();
 
+  memman_init(memman);
+  /*
+    memman used 32k = 32 * 1024 = 32768 = 0x8000
+    start = 0x10800
+    length = 3FEF000 = 0x800 = 0x3FEE8000
+  */
+  memman_free(memman, 0x00108000, 0x3FEE8000);
+
+  int memTotal = memman_total(memman) / 1024 / 1024;
+  unsigned char *pMemTotal = intToHexStr(memTotal); // 1022 M
+  showString(binfo->vgaRam, binfo->screenX, 17 * 8, 0, COL8_FFFFFF, pMemTotal);
+  
   int data = 0;
   static int count = 0;
   for (;;)
@@ -54,11 +68,13 @@ void CMain(void)
       io_sti();
       data = fifo8_get(&keyfifo);
 
-      if (data == 0x1C) {
+      if (data == 0x1C)
+      {
         // Enter key
-        showMemoryInfo( memDesc + count, binfo->vgaRam, count, binfo->screenX, COL8_FFFFFF);
+        showMemoryInfo(memDesc + count, binfo->vgaRam, count, binfo->screenX, COL8_FFFFFF);
         count++;
-        if (count > memCount) {
+        if (count > memCount)
+        {
           count = 0;
         }
       }
@@ -104,3 +120,9 @@ void initBootInfo(struct BOOTINFO *pBootInfo)
   pBootInfo->screenY = 200;
 }
 
+#include "string.c"
+#include "graphics.c"
+#include "fifo.c"
+#include "keyboard.c"
+#include "mouse.c"
+#include "memory.c"
