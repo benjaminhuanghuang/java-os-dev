@@ -25,29 +25,34 @@ void CMain(void)
   init_keyboard();
 
   init_palette();
-
   memman_init(memman);
   /*
     memman used 32k = 32 * 1024 = 32768 = 0x8000
     start = 0x10800
-    length = 3FEF000 = 0x800 = 0x3FEE8000
+    length = 3FEF0000 - 0x8000 = 0x3FEE8000
   */
-  memman_free(memman, 0x001008000, 0x3FEE8000);
+  memman_free(memman, 0x00108000, 0x3FEE8000);
 
-  /*
-    Setup sheets
-  */
+  int memTotal = memman_total(memman) / 1024 / 1024;
+  unsigned char *pMemTotal = intToHexStr(memTotal); // 0x3FE = 1022 M
+  showString(binfo->vgaRam, binfo->screenX, 17 * 8, 0, COL8_FFFFFF, pMemTotal);
+  // /*
+  //   Setup sheets
+  // */
   shtctl = shtctl_init(memman, binfo->vgaRam, binfo->screenX, binfo->screenY);
   sht_back = sheet_alloc(shtctl);
   sht_mouse = sheet_alloc(shtctl);
   buf_back = (unsigned char *)memman_alloc_4k(memman, binfo->screenX * binfo->screenY);
-
+  if (buf_back == 0)
+  {
+    showString(binfo->vgaRam, binfo->screenX, 17 * 8, 9, COL8_FFFFFF, 15);
+  }
   // set buffer to sheet
   sheet_setbuf(sht_back, buf_back, binfo->screenX, binfo->screenY, COLOR_INVISIBLE);
   sheet_setbuf(sht_mouse, buf_mouse, 16, 16, COLOR_INVISIBLE);
 
-  // draw_desktop(buf_back, binfo->screenX, binfo->screenY);
-  draw_desktop(binfo->vgaRam, binfo->screenX, binfo->screenY);
+  draw_desktop(buf_back, binfo->screenX, binfo->screenY);
+  // draw_desktop(binfo->vgaRam, binfo->screenX, binfo->screenY);
   //初始化存储鼠标形状颜色的数组(16*16)
   init_mouse_cursor(buf_mouse, COLOR_INVISIBLE);
   sheet_slide(shtctl, sht_back, 0, 0);
