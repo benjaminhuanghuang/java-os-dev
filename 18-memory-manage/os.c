@@ -35,6 +35,7 @@ void CMain(void)
   io_sti();
   enable_mouse(&mdec);
 
+  // Disploy how many blocks
   int memCount = get_memory_block_count();
   unsigned char *pStr = intToHexStr(memCount);
   showString(binfo->vgaRam, binfo->screenX, 0, 0, COL8_FFFFFF, pStr);
@@ -45,7 +46,7 @@ void CMain(void)
   /*
     memman used 32k = 32 * 1024 = 32768 = 0x8000
     start = 0x10800
-    length = 3FEF000 = 0x800 = 0x3FEE8000
+    length = 3FEF0000 - 0x8000 = 0x3FEE8000
   */
   memman_free(memman, 0x00108000, 0x3FEE8000);
 

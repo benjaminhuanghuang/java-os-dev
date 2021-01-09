@@ -32,22 +32,22 @@ void CMain(void)
     start = 0x10800
     length = 3FEF000 = 0x800 = 0x3FEE8000
   */
-  memman_free(memman, 0x001008000, 0x3FEE8000);
-
+  // memman_free(memman, 0x001008000, 0x3FEE8000);
+  memman_free(memman, 0x00001000, 0x0009e000); /* 0x00001000 - 0x0009efff */
+	// memman_free(memman, 0x00400000, memtotal - 0x00400000);
   /*
     Setup sheets
   */
   shtctl = shtctl_init(memman, binfo->vgaRam, binfo->screenX, binfo->screenY);
   sht_back = sheet_alloc(shtctl);
   sht_mouse = sheet_alloc(shtctl);
-  buf_back = (unsigned char *)memman_alloc_4k(memman, binfo->screenX * binfo->screenY);
+  buf_back = (unsigned char *)memman_alloc(memman, binfo->screenX * binfo->screenY);
 
   // set buffer to sheet
-  sheet_setbuf(sht_back, buf_back, binfo->screenX, binfo->screenY, COLOR_INVISIBLE);
+  sheet_setbuf(sht_back, buf_back, binfo->screenX, binfo->screenY, -1);
   sheet_setbuf(sht_mouse, buf_mouse, 16, 16, COLOR_INVISIBLE);
 
-  // draw_desktop(buf_back, binfo->screenX, binfo->screenY);
-  draw_desktop(binfo->vgaRam, binfo->screenX, binfo->screenY);
+  draw_desktop(buf_back, binfo->screenX, binfo->screenY);
   //初始化存储鼠标形状颜色的数组(16*16)
   init_mouse_cursor(buf_mouse, COLOR_INVISIBLE);
   sheet_slide(shtctl, sht_back, 0, 0);
@@ -103,6 +103,7 @@ void CMain(void)
         {
           my = binfo->screenY - 16;
         }
+        sheet_refresh(shtctl, sht_back, 0, 0, 80, 16);
         sheet_slide(shtctl, sht_mouse, mx, my);
       }
     }

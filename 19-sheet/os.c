@@ -29,10 +29,10 @@ void CMain(void)
   memman_init(memman);
   /*
     memman used 32k = 32 * 1024 = 32768 = 0x8000
-    start = 0x10800
-    length = 3FEF000 = 0x800 = 0x3FEE8000
+    start = 0x100000 + 0x800 = 0x100800
+    length = 3FEF000 - 0x800 = 0x3FEE8000
   */
-  memman_free(memman, 0x001008000, 0x3FEE8000);
+  memman_free(memman, 0x00108000, 0x3FEE8000);
 
   /*
     Setup sheets

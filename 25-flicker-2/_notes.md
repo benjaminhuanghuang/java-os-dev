@@ -28,3 +28,22 @@ https://www.bilibili.com/video/BV1hJ411n7rs?p=25
 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
 ```
+
+在SHTCTL多增加了一个变量map, 用来记录图层每一个像素点所对应的窗体编号的。
+```
+struct SHTCTL {
+    unsigned char *vram, *map;
+    int xsize, ysize, top;
+    struct SHEET *sheets[MAX_SHEETS];
+    struct SHEET sheets0[MAX_SHEETS];
+};
+```
+在初始化图层信息时，为map变量分配内存，以便用来记录图层像素点的窗口编号。
+如何确定每个窗体图层所对应的编号呢? 所有的图层都是从图层控制器SHTCTL 的图层数组sheets0中分配的，我们把图层对象在这个数值中的下标作为它的窗体编号，添加一个函数叫refresh_map，用来记录当前需要刷新的窗口的像素所对应的编号。
+```
+void sheet_refreshmap(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1, int h0) 
+```
+这个函数跟以前的刷新函数refresh_sub几乎一模一样，是用来设置像素对应的图层编号的，
+假如窗口1的某个像素位于坐标（20， 30），那么我就在map[30*xsize + 20] 处设置为1， xsize 是桌面的宽度，如果窗口2移动后，有像素点也移动到了坐标(20,30), 那么上面的代码就会把map[30*xsize + 20] 处设置为2，也就是窗口1的像素被窗口2所覆盖了。
+
+有了像素所在位置对应的窗口号后，就可以只刷新对应窗口的像素点，于是对窗口刷新函数做下列修改：
