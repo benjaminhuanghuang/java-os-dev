@@ -5,19 +5,4 @@
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=29
 
-
-1. multiple Timer
-```
-struct TIMER {
-    unsigned int timeout, flags;
-    struct FIFO8 *fifo;
-    unsigned char data;
-};
-
-struct TIMERCTL {
-    unsigned int count;
-
-    struct TIMER timer[MAX_TIMER];
-
-};
-```
+1. 

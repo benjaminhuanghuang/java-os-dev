@@ -1,4 +1,5 @@
 #include "os.h"
+void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 
 static char keytable[0x54] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,
@@ -7,7 +8,7 @@ static char keytable[0x54] = {
     'B', 'N', 'M', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, '7', '8', '9', '-', '4', '5', '6', '+', '1',
     '2', '3', '0', '.'};
-  
+
 void initBootInfo(struct BOOTINFO *pBootInfo);
 static unsigned char strBuffer[10];
 
@@ -66,9 +67,11 @@ void CMain(void)
   // Sheet -- Messagebox
   unsigned char *buf_win = (unsigned char *)memman_alloc_4k(memman, 160 * 52);
   struct SHEET *sht_win = sheet_alloc(shtctl);
+  int cursor_x = 8, cursor_c = COL8_FFFFFF;
   sheet_setbuf(sht_win, buf_win, 160, 52, -1);
   static unsigned char win_title[11] = "Hello OS";
   draw_window(buf_win, 160, 52, win_title);
+  make_textbox8(sht_win, 8, 28, 128, 16, COL8_FFFFFF);
   sheet_slide(shtctl, sht_win, 80, 72);
 
   //  Set sheets order
@@ -86,19 +89,8 @@ void CMain(void)
   fifo8_init(&timerfifo, 8, timerbuf);
   timer = timer_alloc();
   timer_init(timer, &timerfifo, 1);
-  // Timer 设置为1秒100次中断，500 次中断=5s
-  timer_settime(timer, 500);
-
-  fifo8_init(&timerfifo2, 8, timerbuf2);
-  timer2 = timer_alloc();
-  timer_init(timer2, &timerfifo2, 1);
-  timer_settime(timer2, 300);
-
-  fifo8_init(&timerfifo3, 8, timerbuf3);
-  timer3 = timer_alloc();
-  timer_init(timer3, &timerfifo3, 1);
   // Timer 设置为1秒100次中断，50 次中断=0.5s
-  timer_settime(timer3, 50);
+  timer_settime(timer, 50);
 
   int data = 0;
   for (;;)
@@ -114,13 +106,17 @@ void CMain(void)
     else if (fifo8_status(&keyfifo) != 0)
     {
       data = fifo8_get(&keyfifo);
-      if(keytable[data] != 0){
+      if (keytable[data] != 0)
+      {
         strBuffer[0] = keytable[data];
         strBuffer[1] = 0;
-        // draw timer count the messagebox
-        boxfill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
-        showString(buf_win, 160, 40, 28, COL8_000000, strBuffer);
-        sheet_refresh(shtctl, sht_win, 40, 28, 119, 43);
+        boxfill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cursor_x, 28, cursor_x + 7, 43);
+        sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
+
+        showString(shtctl, sht_win, cursor_x, 28, COL8_000000, strBuffer);
+        cursor_x += 8;
+        boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+        sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
       }
       io_sti();
     }
@@ -150,39 +146,30 @@ void CMain(void)
           my = binfo->screenY - 16;
         }
         sheet_slide(shtctl, sht_mouse, mx, my);
+        if ((mdec.btn & 0x01) != 0)
+        {
+          sheet_slide(shtctl, sht_win, mx - 80, my - 8);
+        }
       }
     }
     else if (fifo8_status(&timerfifo) != 0)
     {
       // Timer done
-      io_sti();
-      fifo8_get(&timerfifo);
-    }
-    else if (fifo8_status(&timerfifo2) != 0)
-    {
-      // Timer done
-      io_sti();
-      fifo8_get(&timerfifo2);
-      // showString(buf_back, 320, 10, 10, COL8_000000, s);
-    }
-    else if (fifo8_status(&timerfifo3) != 0)
-    {
-      // Timer done
-      int data = fifo8_get(&timerfifo3);
+      int data = fifo8_get(&timerfifo);
 
       if (data != 0)
       {
-        timer_init(timer3, &timerfifo3, 0);
-        boxfill8(buf_back, 320, COL8_FFFFFF, 8, 96, 15, 111);
+        timer_init(timer, &timerfifo, 0); /* 次は0を */
+        cursor_c = COL8_000000;
       }
       else
       {
-        timer_init(timer3, &timerfifo3, 1);
-        boxfill8(buf_back, 320, COL8_008484, 8, 96, 15, 111);
+        timer_init(timer, &timerfifo, 1); /* 次は1を */
+        cursor_c = COL8_FFFFFF;
       }
-      sheet_refresh(shtctl, sht_back, 8, 96, 16, 112);
-
-      timer_settime(timer3, 50);
+     	timer_settime(timer, 50);
+			boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+			sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
       io_sti();
     }
   }
@@ -193,6 +180,21 @@ void initBootInfo(struct BOOTINFO *pBootInfo)
   pBootInfo->vgaRam = (unsigned char *)0xa0000;
   pBootInfo->screenX = 320;
   pBootInfo->screenY = 200;
+}
+
+void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c)
+{
+  int x1 = x0 + sx, y1 = y0 + sy;
+  boxfill8(sht->buf, sht->bxsize, COL8_848484, x0 - 2, y0 - 3, x1 + 1, y0 - 3);
+  boxfill8(sht->buf, sht->bxsize, COL8_848484, x0 - 3, y0 - 3, x0 - 3, y1 + 1);
+  boxfill8(sht->buf, sht->bxsize, COL8_FFFFFF, x0 - 3, y1 + 2, x1 + 1, y1 + 2);
+  boxfill8(sht->buf, sht->bxsize, COL8_FFFFFF, x1 + 2, y0 - 3, x1 + 2, y1 + 2);
+  boxfill8(sht->buf, sht->bxsize, COL8_000000, x0 - 1, y0 - 2, x1 + 0, y0 - 2);
+  boxfill8(sht->buf, sht->bxsize, COL8_000000, x0 - 2, y0 - 2, x0 - 2, y1 + 0);
+  boxfill8(sht->buf, sht->bxsize, COL8_C6C6C6, x0 - 2, y1 + 1, x1 + 0, y1 + 1);
+  boxfill8(sht->buf, sht->bxsize, COL8_C6C6C6, x1 + 1, y0 - 2, x1 + 1, y1 + 1);
+  boxfill8(sht->buf, sht->bxsize, c, x0 - 1, y0 - 1, x1 + 0, y1 + 0);
+  return;
 }
 
 #include "string.c"
