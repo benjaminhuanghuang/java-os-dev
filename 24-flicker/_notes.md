@@ -10,7 +10,7 @@ https://www.bilibili.com/video/BV1hJ411n7rs?p=24
 
 
 一个窗体刷新时，高度小于它到窗体根本不需要跟着刷新，
-改进: 当窗体刷新时，只刷新同一层高度或高度更高的图层，因此给sheet_refreshsub添加一个新参数 height
+改进: 当窗体刷新时，只刷新同一层高度或高度更高的图层，因此给sheet_refreshsub添加一个新参数 height, 把当前更新图层所在的高度传进去。
 ```
 void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1, int height) {
     ....

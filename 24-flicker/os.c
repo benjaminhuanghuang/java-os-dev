@@ -67,7 +67,7 @@ void CMain(void)
   sheet_updown(shtctl, sht_win, 1);
   sheet_updown(shtctl, sht_mouse, 2);
 
-  //sheet_refresh(shtctl, sht_back, 0, 0, 320, 48);
+  sheet_refresh(shtctl, sht_back, 0, 0, 320, 48);
 
   int data = 0;
   static int counter = 0;
