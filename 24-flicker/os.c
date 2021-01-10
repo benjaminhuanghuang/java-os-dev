@@ -14,15 +14,14 @@ void CMain(void)
   struct BOOTINFO *binfo = &bootInfo;
 
   unsigned char s[40], mcursor[256], keybuf[32], mousebuf[128];
-
+  io_sti();
   fifo8_init(&keyfifo, 32, keybuf);
   fifo8_init(&mousefifo, 128, mousebuf);
 
   int mx, my, i, j;
 
   init_keyboard();
-
-  init_palette();
+  enable_mouse(&mdec);
   memman_init(memman);
   /*
     memman used 32k = 32 * 1024 = 32768 = 0x8000
@@ -34,7 +33,7 @@ void CMain(void)
   // int memTotal = memman_total(memman) / 1024 / 1024;
   // unsigned char *pMemTotal = intToHexStr(memTotal); // 0x3FE = 1022 M
   // showString(binfo->vgaRam, binfo->screenX, 17 * 8, 0, COL8_FFFFFF, pMemTotal);
-  
+  init_palette();
   // Setup sheets
   static struct SHTCTL *shtctl;
   shtctl = shtctl_init(memman, binfo->vgaRam, binfo->screenX, binfo->screenY);
@@ -68,13 +67,19 @@ void CMain(void)
   sheet_updown(shtctl, sht_win, 1);
   sheet_updown(shtctl, sht_mouse, 2);
 
-  // Enable interupt
-  io_sti();
-  enable_mouse(&mdec);
+  //sheet_refresh(shtctl, sht_back, 0, 0, 320, 48);
 
   int data = 0;
+  static int counter = 0;
   for (;;)
   {
+    counter++;
+    // re-draw the messagebox
+    unsigned char* s = intToHexStr(counter);
+    boxfill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
+		showString(buf_win, 160, 40, 28, COL8_000000, s);
+		sheet_refresh(shtctl, sht_win, 40, 28, 119, 43);
+
     io_cli();
     if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) == 0)
     {

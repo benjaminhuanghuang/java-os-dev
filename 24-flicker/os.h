@@ -211,6 +211,4 @@ void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height);
 void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1);
 int sheet_refresh(struct SHTCTL *ctl, struct SHEET *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0);
-void drawString(struct SHTCTL *shtctl, struct SHEET *sht, int x, int y, char color, unsigned char *s);
-
 #endif

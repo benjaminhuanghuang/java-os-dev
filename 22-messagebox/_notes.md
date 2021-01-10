@@ -23,3 +23,5 @@ Create a window
     sheet_updown(sht_win,   1);
 
 ```
+
+create a messagebox 是为了展示 mouse hover on时会产生闪烁

@@ -3,11 +3,8 @@
 void initBootInfo(struct BOOTINFO *pBootInfo);
 
 static struct MEMMAN *memman = (struct MEMMAN *)0x100000;
-static unsigned char *buf_back, buf_mouse[256];
 
 #define COLOR_INVISIBLE 99
-static struct SHTCTL *shtctl;
-static struct SHEET *sht_back = 0, *sht_mouse = 0;
 
 void CMain(void)
 {
@@ -17,6 +14,7 @@ void CMain(void)
   struct BOOTINFO *binfo = &bootInfo;
 
   unsigned char s[40], mcursor[256], keybuf[32], mousebuf[128];
+
   fifo8_init(&keyfifo, 32, keybuf);
   fifo8_init(&mousefifo, 128, mousebuf);
 
@@ -25,42 +23,52 @@ void CMain(void)
   init_keyboard();
 
   init_palette();
-
   memman_init(memman);
   /*
     memman used 32k = 32 * 1024 = 32768 = 0x8000
     start = 0x10800
-    length = 3FEF000 = 0x800 = 0x3FEE8000
+    length = 3FEF0000 - 0x8000 = 0x3FEE8000
   */
-  // memman_free(memman, 0x001008000, 0x3FEE8000);
-  memman_free(memman, 0x00001000, 0x0009e000); /* 0x00001000 - 0x0009efff */
-	// memman_free(memman, 0x00400000, memtotal - 0x00400000);
-  /*
-    Setup sheets
-  */
+  memman_free(memman, 0x00108000, 0x3FEE8000);
+
+  // int memTotal = memman_total(memman) / 1024 / 1024;
+  // unsigned char *pMemTotal = intToHexStr(memTotal); // 0x3FE = 1022 M
+  // showString(binfo->vgaRam, binfo->screenX, 17 * 8, 0, COL8_FFFFFF, pMemTotal);
+  
+  // Setup sheets
+  static struct SHTCTL *shtctl;
   shtctl = shtctl_init(memman, binfo->vgaRam, binfo->screenX, binfo->screenY);
-  sht_back = sheet_alloc(shtctl);
-  sht_mouse = sheet_alloc(shtctl);
-  buf_back = (unsigned char *)memman_alloc(memman, binfo->screenX * binfo->screenY);
-
-  // set buffer to sheet
-  sheet_setbuf(sht_back, buf_back, binfo->screenX, binfo->screenY, -1);
-  sheet_setbuf(sht_mouse, buf_mouse, 16, 16, COLOR_INVISIBLE);
-
+  
+  // Sheet -- Desktop
+  unsigned char *buf_back = (unsigned char *)memman_alloc_4k(memman, binfo->screenX * binfo->screenY);
+  struct SHEET *sht_back = sheet_alloc(shtctl);
+  sheet_setbuf(sht_back, buf_back, binfo->screenX, binfo->screenY, COLOR_INVISIBLE);
   draw_desktop(buf_back, binfo->screenX, binfo->screenY);
-  //初始化存储鼠标形状颜色的数组(16*16)
-  init_mouse_cursor(buf_mouse, COLOR_INVISIBLE);
   sheet_slide(shtctl, sht_back, 0, 0);
 
-  //鼠标初始位置
-  mx = (binfo->screenX - 16) / 2;
+  // Sheet -- Mouse
+  static unsigned char buf_mouse[256];
+  struct SHEET *sht_mouse = sheet_alloc(shtctl);
+  sheet_setbuf(sht_mouse, buf_mouse, 16, 16, COLOR_INVISIBLE);
+  init_mouse_cursor(buf_mouse, COLOR_INVISIBLE); // draw mouse to buffer
+  mx = (binfo->screenX - 16) / 2;          //鼠标初始位置
   my = (binfo->screenY - 28 - 16) / 2;
-
   sheet_slide(shtctl, sht_mouse, mx, my);
   
-  sheet_updown(shtctl, sht_back, 0);
-  sheet_updown(shtctl, sht_mouse, 1);
+  // Sheet -- Messagebox
+  unsigned char *buf_win = (unsigned char *) memman_alloc_4k(memman, 160 * 52);
+  struct SHEET  *sht_win = sheet_alloc(shtctl);
+  sheet_setbuf(sht_win, buf_win, 160, 52, -1);
+  static char win_title[11] = "Hello OS";
+  draw_window(buf_win, 160, 52, win_title);
+  sheet_slide(shtctl, sht_win, 80, 72);  
 
+  //  Set sheets order
+  sheet_updown(shtctl, sht_back, 0);
+  sheet_updown(shtctl, sht_win, 1);
+  sheet_updown(shtctl, sht_mouse, 2);
+
+  // Enable interupt
   io_sti();
   enable_mouse(&mdec);
 
@@ -103,7 +111,6 @@ void CMain(void)
         {
           my = binfo->screenY - 16;
         }
-        sheet_refresh(shtctl, sht_back, 0, 0, 80, 16);
         sheet_slide(shtctl, sht_mouse, mx, my);
       }
     }

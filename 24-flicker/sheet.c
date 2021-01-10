@@ -95,7 +95,7 @@ void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height)
 			ctl->top--;
 		}
 
-		sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize);
+		sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0+sht->bxsize, sht->vy0+sht->bysize); 
 	}
 	else if (old < height)
 	{
@@ -121,7 +121,7 @@ void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height)
 			ctl->top++;
 		}
 
-		sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize);
+		sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0+sht->bxsize, sht->vy0+sht->bysize); 
 	}
 }
 
@@ -173,16 +173,4 @@ void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0)
 		sheet_refreshsub(ctl, old_vx0, old_vy0, old_vx0 + sht->bxsize, old_vy0 + sht->bysize);
 		sheet_refreshsub(ctl, vx0, vy0, vx0 + sht->bxsize, vy0 + sht->bysize);
 	}
-}
-
-void drawString(struct SHTCTL *shtctl, struct SHEET *sht, int x, int y, char color, unsigned char *s)
-{
-	int begin = x;
-	for (; *s != 0x00; s++)
-	{
-		showFont8(sht->buf, sht->bxsize, x, y, color, systemFont + *s * 16);
-		x += 8;
-	}
-
-	sheet_refresh(shtctl, sht, begin, y, x, y + 16);
 }
