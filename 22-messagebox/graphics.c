@@ -164,7 +164,7 @@ void draw_desktop(unsigned char *vram, int x, int y)
 	return;
 }
 
-void make_window8(unsigned char *buf, int xsize, int ysize, char *title)
+void draw_window(unsigned char *buf, int xsize, int ysize, unsigned char *title)
 {
 	static char closebtn[14][16] = {
 		"OOOOOOOOOOOOOOO@",

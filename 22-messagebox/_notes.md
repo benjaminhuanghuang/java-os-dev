@@ -11,22 +11,15 @@ void make_window8(unsigned char *buf, int xsize, int ysize, char *title)
 ```
 
 
-Call make_window8
+Create a window
 ```
-void message_box(struct SHTCTL *shtctl,  char *title) {
-    struct SHEET *sht_win;
-    unsigned char *buf_win;
+    unsigned  *buf_win;
+    
+    buf_win   = (unsigned char *) memman_alloc_4k(memman, 160 * 52);
+    sht_win   = sheet_alloc(shtctl);
+    sheet_setbuf(sht_win, buf_win, 160, 52, -1);
+    make_window8(buf_win, 160, 52, "counter");
+    sheet_slide(sht_win, 80, 72);
+    sheet_updown(sht_win,   1);
 
-    sht_win = sheet_alloc(shtctl);
-    buf_win = (unsigned char *)memman_alloc_4k(memman, 160 * 68);
-    sheet_setbuf(sht_win, buf_win, 160, 68, -1);
-
-    make_window8(shtctl, sht_win, title);
-
-    showString(shtctl, sht_win, 24, 28, COL8_000000, "Welcome to");
-    showString(shtctl, sht_win, 24, 44, COL8_000000, "MyOS");
-
-    sheet_slide(shtctl, sht_win, 80, 72);
-    sheet_updown(shtctl, sht_win, 1);
-}
 ```

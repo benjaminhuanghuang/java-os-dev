@@ -62,7 +62,7 @@ void showString(unsigned char *vram, int xsize,
                 unsigned char *s);
 void init_mouse_cursor(unsigned char *mouse, char bc);       
 void draw_desktop(unsigned char *vram, int x, int y);
-
+void draw_window(unsigned char *buf, int xsize, int ysize, unsigned char *title);
 
 /*
   Font
@@ -194,21 +194,22 @@ struct SHEET {
 
 struct SHTCTL {
   //
-	unsigned char *vram, *map;
+	unsigned char *vram;
   // top = how many sheets
 	int xsize, ysize, top;
   // ordered sheets
 	struct SHEET *sheets[MAX_SHEETS];
 	struct SHEET sheets0[MAX_SHEETS];
 };
-
+// apply a new sheet from the sheet controller 
 struct SHEET *sheet_alloc(struct SHTCTL *ctl);
+// init the controller
 struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram,int xsize, int ysize);
-
+// bind memory block to sheet
 void sheet_setbuf(struct SHEET *sht, unsigned char *buf, int xsize, int ysize, int col_inv);
 void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height);
+void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1);
 int sheet_refresh(struct SHTCTL *ctl, struct SHEET *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0);
-void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1);
 
 #endif

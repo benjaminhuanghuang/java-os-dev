@@ -25,13 +25,13 @@ struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram,
 	return ctl;
 }
 
-#define SHEET_USE 1
 struct SHEET *sheet_alloc(struct SHTCTL *ctl)
 {
 	struct SHEET *sht;
 	int i;
 	for (i = 0; i < MAX_SHEETS; i++)
 	{
+		// find an unused sheet
 		if (ctl->sheets0[i].flags == 0)
 		{
 			sht = &ctl->sheets0[i];
@@ -80,7 +80,6 @@ void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height)
 			}
 
 			ctl->sheets[height] = sht;
-			sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize);
 		}
 		else
 		{
@@ -94,8 +93,9 @@ void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height)
 			}
 
 			ctl->top--;
-			sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize);
 		}
+
+		sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0+sht->bxsize, sht->vy0+sht->bysize); 
 	}
 	else if (old < height)
 	{
@@ -120,8 +120,8 @@ void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height)
 			ctl->sheets[height] = sht;
 			ctl->top++;
 		}
-		
-		sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize);
+
+		sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0+sht->bxsize, sht->vy0+sht->bysize); 
 	}
 }
 
@@ -162,6 +162,7 @@ void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1)
 		}
 	}
 }
+
 void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0)
 {
 	int old_vx0 = sht->vx0, old_vy0 = sht->vy0;
