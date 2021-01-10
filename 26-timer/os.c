@@ -68,14 +68,17 @@ void CMain(void)
   sheet_updown(shtctl, sht_mouse, 2);
 
   sheet_refresh(shtctl, sht_back, 0, 0, 320, 48);
-
+  //-- Timer
+  init_timer();
+  fifo8_init(&timerfifo, 8, timerbuf);
+  // Timer 设置为1秒100次中断，500 次中断=5s 
+  settimer(500, &timerfifo, 1);
+  
   int data = 0;
-  static int counter = 0;
   for (;;)
   {
-    counter++;
     // re-draw the messagebox
-    unsigned char* s = intToHexStr(counter);
+    unsigned char* s = intToHexStr(timerctl.timeout);
     boxfill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
 		showString(buf_win, 160, 40, 28, COL8_000000, s);
 		sheet_refresh(shtctl, sht_win, 40, 28, 119, 43);

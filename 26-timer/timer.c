@@ -1,13 +1,14 @@
 #include "os.h";
 
-void init_pit(void)
+void init_timer(void)
 {
+  // 将中断周期设定为11932，中断频率就是100Hz，也就是1秒钟会发生100次中断
   io_out8(PIT_CTRL, 0x34);
   io_out8(PIT_CNT0, 0x9c);
   io_out8(PIT_CNT0, 0x2e);
 
-  timerctl.count = 0;
-  timerctl.timeout = 0;
+  timerctl.count = 0;     // count ++ 
+  timerctl.timeout = 0;   // timeout ==0 时触发中断 
 }
 
 void intHandler20(char *esp)
@@ -36,9 +37,4 @@ void settimer(unsigned int timeout, struct FIFO8 *fifo, unsigned char data)
   timerctl.data = data;
   io_store_eflags(eflags);    //恢复接收中断信号
   return;
-}
-
-struct TIMERCTL *getTimerController()
-{
-  return &timerctl;
 }

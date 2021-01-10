@@ -31,8 +31,12 @@ LABEL_IDT:
 .021h:
     Gate SelectorCode32, KeyBoardHandler,0, DA_386IGate
 
+%rep 10
+    Gate SelectorCode32, SpuriousHandler, 0, DA_386IGate
+%endrep
+
 .2Ch:
-    Gate SelectorCode32, mouseHandler, 0, DA_386IGate
+    Gate SelectorCode32, MouseHandler, 0, DA_386IGate
 
 IdtLen  equ $ - LABEL_IDT
 IdtPtr  dw  IdtLen - 1
@@ -210,7 +214,7 @@ TimerHandler equ _timerHandler - $$
      iretd
 
 _KeyBoardhandler:
-keyBoardHandler equ _KeyBoardhandler - $$
+KeyBoardHandler equ _KeyBoardhandler - $$
     push es
     push ds
     pushad
@@ -226,7 +230,7 @@ keyBoardHandler equ _KeyBoardhandler - $$
     iretd
 
 _MouseHandler:
-mouseHandler equ _MouseHandler - $$
+MouseHandler equ _MouseHandler - $$
     push es
     push ds
     pushad

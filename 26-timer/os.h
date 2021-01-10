@@ -221,18 +221,17 @@ Timer
 #define PIT_CNT0   0x0040
 void intHandler20(char *esp);
 
-void init_pit(void);
+void init_timer(void);
 
 struct TIMERCTL {
     unsigned int count;
     unsigned int timeout;
     struct FIFO8 *fifo;
-    unsigned char data;
+    unsigned char data; // wirte date to fifo
 };
 
-struct TIMERCTL* getTimerController();
 static struct TIMERCTL timerctl;
 
 void settimer(unsigned int timeout, struct FIFO8 *fifo, unsigned char data);
-static struct FIFO8 timerinfo;
+static struct FIFO8 timerfifo;
 #endif

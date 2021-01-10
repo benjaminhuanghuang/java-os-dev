@@ -1,4 +1,4 @@
-IMAGE_NAME  = myos25.img
+IMAGE_NAME  = myos26.img
 BOOT_NAME  = boot.bin
 KERNEL_NAME  = kernel.bin
 
