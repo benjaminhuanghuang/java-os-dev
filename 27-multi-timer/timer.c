@@ -63,7 +63,7 @@ void intHandler20(char *esp)
   int i;
   for (i = 0; i < MAX_TIMER; i++)
   {
-    if (timerctl.timer[i].flags == TIMER_FLAGS_USING)
+    if (timerctl.timer[i].flags == TIMER_FLAGS_USING && timerctl.timer[i].timeout > 0)
     {
       timerctl.timer[i].timeout--;
       if (timerctl.timer[i].timeout == 0)

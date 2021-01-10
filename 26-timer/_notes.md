@@ -1,6 +1,6 @@
 
 # Hello OS
-[消除图层刷新而导致的严重闪烁-2](https://blog.csdn.net/tyler_download/article/details/53487885)
+[实现定时器功能](https://blog.csdn.net/tyler_download/article/details/53487885)
 
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=26

@@ -83,7 +83,7 @@ void CMain(void)
   fifo8_init(&timerfifo2, 8, timerbuf2);
   timer2 = timer_alloc();
   timer_init(timer2, &timerfifo2, 1);
-  timer_settime(timer2, 500);
+  timer_settime(timer2, 300);
 
   fifo8_init(&timerfifo3, 8, timerbuf3);
   timer3 = timer_alloc();
@@ -140,20 +140,26 @@ void CMain(void)
     {
       // Timer done
       io_sti();
-      showString(buf_back, 320, 10, 10, COL8_000000, s);
+      fifo8_get(&timerfifo);
+      // draw timer count the messagebox
+      unsigned char* s = intToHexStr(timer->timeout);
+      boxfill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
+      showString(buf_win, 160, 40, 28, COL8_000000, s);
+      sheet_refresh(shtctl, sht_win, 40, 28, 119, 43);
     }
     else if (fifo8_status(&timerfifo2) != 0)
     {
       // Timer done
       io_sti();
-      showString(buf_back, 320, 10, 10, COL8_000000, s);
+      fifo8_get(&timerfifo2);
+      // showString(buf_back, 320, 10, 10, COL8_000000, s);
     }
     else if (fifo8_status(&timerfifo3) != 0)
     {
       // Timer done
-      int i = fifo8_get(&timerfifo3);
-      io_sti();
-      if (i != 0)
+      int data = fifo8_get(&timerfifo3);
+
+      if (data != 0)
       {
         timer_init(timer3, &timerfifo3, 0);
         boxfill8(buf_back, 320, COL8_FFFFFF, 8, 96, 15, 111);
@@ -163,8 +169,10 @@ void CMain(void)
         timer_init(timer3, &timerfifo3, 1);
         boxfill8(buf_back, 320, COL8_008484, 8, 96, 15, 111);
       }
-      timer_settime(timer3, 50);
       sheet_refresh(shtctl, sht_back, 8, 96, 16, 112);
+
+      timer_settime(timer3, 50);
+      io_sti();
     }
   }
 }
