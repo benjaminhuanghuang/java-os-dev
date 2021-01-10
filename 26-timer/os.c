@@ -77,14 +77,14 @@ void CMain(void)
   int data = 0;
   for (;;)
   {
-    // re-draw the messagebox
+    // draw timer count the messagebox
     unsigned char* s = intToHexStr(timerctl.timeout);
     boxfill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
 		showString(buf_win, 160, 40, 28, COL8_000000, s);
 		sheet_refresh(shtctl, sht_win, 40, 28, 119, 43);
 
     io_cli();
-    if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) == 0)
+    if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) + fifo8_status(&timerfifo) == 0)
     {
       io_stihlt();
     }
@@ -121,6 +121,12 @@ void CMain(void)
         }
         sheet_slide(shtctl, sht_mouse, mx, my);
       }
+    }
+    else if (fifo8_status(&timerfifo) != 0)
+    {
+      // Timer done
+      io_sti();
+      showString(buf_back, 320, 10, 10, COL8_000000, s);
     }
   }
 }
