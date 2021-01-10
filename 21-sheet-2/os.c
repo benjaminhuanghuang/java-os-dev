@@ -43,10 +43,7 @@ void CMain(void)
   sht_back = sheet_alloc(shtctl);
   sht_mouse = sheet_alloc(shtctl);
   buf_back = (unsigned char *)memman_alloc_4k(memman, binfo->screenX * binfo->screenY);
-  if (buf_back == 0)
-  {
-    showString(binfo->vgaRam, binfo->screenX, 17 * 8, 9, COL8_FFFFFF, 15);
-  }
+  
   // set buffer to sheet
   sheet_setbuf(sht_back, buf_back, binfo->screenX, binfo->screenY, COLOR_INVISIBLE);
   sheet_setbuf(sht_mouse, buf_mouse, 16, 16, COLOR_INVISIBLE);

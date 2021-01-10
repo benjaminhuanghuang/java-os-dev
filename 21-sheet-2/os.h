@@ -208,7 +208,8 @@ struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram,int xsize,
 // bind memory block to sheet
 void sheet_setbuf(struct SHEET *sht, unsigned char *buf, int xsize, int ysize, int col_inv);
 void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height);
-int sheet_refresh(struct SHTCTL *ctl);
+void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1);
+int sheet_refresh(struct SHTCTL *ctl, struct SHEET *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0);
 
 #endif
