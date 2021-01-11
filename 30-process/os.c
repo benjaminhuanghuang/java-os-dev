@@ -110,8 +110,11 @@ void CMain(void)
   set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
   set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
   
-  load_tr(7*8);  // load #7
+  // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
+  load_tr(7*8); 
+  // 让CPU跳转到下标为8的描述符所指向的内存
   taskswitch8();
+  
   unsigned char *p = intToHexStr(tss_a.eflags);
   showString(shtctl, sht_back, 0,0, COL8_FFFFFF, p);
   drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);

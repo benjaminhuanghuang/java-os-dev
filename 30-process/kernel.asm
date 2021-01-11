@@ -10,6 +10,7 @@ LABEL_DESC_CODE32:  Descriptor        0,      SegCode32Len - 1,       DA_C + DA_
 LABEL_DESC_VIDEO:   Descriptor        0B8000h,         0ffffh,            DA_DRW
 LABEL_DESC_VRAM:    Descriptor        0,         0ffffffffh,            DA_DRW
 LABEL_DESC_STACK:   Descriptor        0,             TopOfStack,        DA_DRWA+DA_32
+
 ; For TSS
 LABEL_DESC_6:       Descriptor        0,      0fffffh,       0409Ah
 
