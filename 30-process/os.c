@@ -1,6 +1,7 @@
 #include "os.h"
 void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned char *s, int l);
+void task_b_main(void);
 
 // the scean code when key pressed
 static char keytable[0x54] = {
@@ -93,6 +94,33 @@ void CMain(void)
   timer_init(timer, &timerfifo, 1);
   // Timer 设置为1秒100次中断，50 次中断=0.5s
   timer_settime(timer, 50);
+
+  //-- switch task
+  int addr_code32 = get_code32_addr();  // ASM code
+  struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)get_addr_gdt();
+
+  static struct TSS32 tss_b, tss_a;
+  tss_a.ldtr = 0;
+  tss_a.iomap = 0x40000000;
+  tss_b.ldtr = 0;
+  tss_b.iomap = 0x40000000;
+
+  set_segmdesc(gdt + 7, 103, (int)&tss_a, AR_TSS32);
+  set_segmdesc(gdt + 8, 103, (int)&tss_a, AR_TSS32);
+  set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
+  set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
+  
+  load_tr(7*8);  // load #7
+  taskswitch8();
+  unsigned char *p = intToHexStr(tss_a.eflags);
+  showString(shtctl, sht_back, 0,0, COL8_FFFFFF, p);
+  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+     
+  p = intToHexStr(tss_a.esp);
+  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  
+  p = intToHexStr(tss_a.es/ 8);
+  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
 
   int data = 0;
   for (;;)
@@ -217,6 +245,12 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
   return;
 }
 
+void task_b_main(void)
+{
+	for (;;) { io_hlt(); }
+}
+
+
 #include "string.c"
 #include "graphics.c"
 #include "fifo.c"
@@ -225,3 +259,4 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
 #include "memory.c"
 #include "sheet.c"
 #include "timer.c"
+#include "mtask.c"

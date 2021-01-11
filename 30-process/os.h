@@ -22,6 +22,9 @@ void io_out8(int port, int data);
 int io_in8(int port);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
+void load_tr(int);
+void taskswitch8(void);
+int get_code32_addr();
 
 /*
   String utility
@@ -249,7 +252,7 @@ void timer_settime(struct TIMER *timer, unsigned int timeout);
 
 
 /*
-
+  Multi thread
 */
 struct TSS32 {
     int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
@@ -264,15 +267,7 @@ struct SEGMENT_DESCRIPTOR {
     char limit_high, base_high;
 };
 
-struct TSS32 {
-    int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
-    int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
-    int es, cs, ss, ds, fs, gs;
-    int ldtr, iomap;
-};
-
 void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
 
 #define AR_TSS32        0x0089
-
 #endif
