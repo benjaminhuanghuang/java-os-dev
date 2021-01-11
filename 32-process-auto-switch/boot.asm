@@ -89,7 +89,7 @@ putloop:
 		ADD		SI,1			; SI++
 		CMP		AL,0            ; end of string
 		JE		fin
-		MOV		AH,0x0e			; funciton for char
+		MOV		AH,0x0e		; funciton for char
 		MOV		BX,15			; color code
 		INT		0x10			; Call BIOS
 		JMP		putloop

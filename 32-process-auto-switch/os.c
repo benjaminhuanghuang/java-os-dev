@@ -57,6 +57,9 @@ void CMain(void)
   timer_init(timer, &timerfifo, 1);
   timer_settime(timer, 100); // 1s
 
+  //-- Timer for task switching
+  mt_init();
+
   //-- switch task
   int addr_code32 = get_code32_addr(); // ASM code
   struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)get_addr_gdt();
@@ -67,6 +70,16 @@ void CMain(void)
   tss_b.ldtr = 0;
   tss_b.iomap = 0x40000000;
 
+  set_segmdesc(gdt + 7, 103, (int)&tss_a, AR_TSS32);
+  set_segmdesc(gdt + 8, 103, (int)&tss_a, AR_TSS32);
+  set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
+  set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
+
+  // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
+  load_tr(7 * 8);
+  taskswitch8();
+  
+  int task_b_esp = memman_alloc_4k(memman, 1024) + 1024;
   tss_b.eip = (task_b_main - addr_code32);
   tss_b.eflags = 0x00000202;
   tss_b.eax = 0;
@@ -84,13 +97,6 @@ void CMain(void)
   tss_b.fs = tss_a.fs;
   tss_b.gs = tss_a.gs;
 
-  set_segmdesc(gdt + 7, 103, (int)&tss_a, AR_TSS32);
-  set_segmdesc(gdt + 8, 103, (int)&tss_a, AR_TSS32);
-  set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
-  set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
-
-  // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
-  load_tr(7 * 8);
 
   int data = 0;
   int pos = 8;
@@ -98,22 +104,9 @@ void CMain(void)
   for (;;)
   {
     io_cli();
-    if (fifo8_status(&keyfifo)         //
-            + fifo8_status(&mousefifo) // mouse
-            + fifo8_status(&timerfifo) ==
-        0)
+    if ( fifo8_status(&timerfifo) == 0)
     {
       io_stihlt();
-    }
-    else if (fifo8_status(&keyfifo) != 0)
-    {
-      data = fifo8_get(&keyfifo);
-      io_sti();
-    }
-    else if (fifo8_status(&mousefifo) != 0)
-    {
-      data = fifo8_get(&mousefifo);
-      io_sti();
     }
     else if (fifo8_status(&timerfifo) != 0)
     {
@@ -123,8 +116,7 @@ void CMain(void)
       {
         strBuffer[0] = 'A';
         strBuffer[1] = 0;
-        timer_init(timer, &timerfifo, 1);
-        timer_settime(timer, 10);
+        timer_settime(timer, 100);
         drawStringOnSheet(sht_back, pos, 32, COL8_FFFFFF, COL8_008484, strBuffer, 2);
         if (pos < 320 - 10 - 8)
         {
@@ -154,7 +146,7 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
 void task_b_main()
 {
   struct FIFO8 timerinfo_b;
-  char timerbuf_b[8];
+  unsigned char timerbuf_b[8];
   struct TIMER *timer_b = 0;
 
   int i = 0;
@@ -181,7 +173,7 @@ void task_b_main()
       {
         strBuffer[0] = '-';
         strBuffer[1] = 0;
-        drawStringOnSheet(sht_back, 0, 176, COL8_FFFFFF, COL8_008484, strBuffer, 2);
+        drawStringOnSheet(sht_back, 0, 48, COL8_FFFFFF, COL8_008484, strBuffer, 2);
         timer_settime(timer_b, 100);
         pos += 8;
       }

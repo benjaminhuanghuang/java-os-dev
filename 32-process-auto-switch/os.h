@@ -25,7 +25,7 @@ void io_store_eflags(int eflags);
 void load_tr(int);
 void taskswitch8(void);
 int get_code32_addr();
-int get_code32_addr();
+int get_addr_gdt();
 void farjmp(int, int);
 /*
   String utility

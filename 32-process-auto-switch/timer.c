@@ -1,4 +1,4 @@
-#include "os.h";
+#include "os.h"
 
 #define TIMER_FLAGS_ALLOC 1
 #define TIMER_FLAGS_USING 2
