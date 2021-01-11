@@ -355,7 +355,7 @@ taskswitch9:
      jmp 9*8:0
      ret
 
-%include "fontData.inc"
+
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32
 
@@ -366,11 +366,16 @@ MemChkBuf:
     times 512 db 0
 dwMCRNumber:
     dd 0
-
+; font data    
+%include "fontData.inc"
 
 [SECTION .gs]
 ALIGN 32
 [BITS 32]
 LABEL_STACK:
-     times 512  db 0
-TopOfStack  equ  $ - LABEL_STACK
+times 512  db 0
+TopOfStack1  equ  $ - LABEL_STACK
+times 512  db 0
+TopOfStack2  equ  $ - LABEL_STACK
+LenOfStackSection equ $ - LABEL_STACK
+

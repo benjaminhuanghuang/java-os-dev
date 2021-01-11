@@ -1,7 +1,7 @@
 #include "os.h"
 void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned char *s, int l);
-void task_b_main(void);
+void task_b_main(struct SHTCTL *shtctl, struct SHEET *sht_back);
 
 // the scean code when key pressed
 static char keytable[0x54] = {
@@ -96,7 +96,7 @@ void CMain(void)
   timer_settime(timer, 50);
 
   //-- switch task
-  int addr_code32 = get_code32_addr();  // ASM code
+  int addr_code32 = get_code32_addr(); // ASM code
   struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)get_addr_gdt();
 
   static struct TSS32 tss_b, tss_a;
@@ -109,21 +109,21 @@ void CMain(void)
   set_segmdesc(gdt + 8, 103, (int)&tss_a, AR_TSS32);
   set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
   set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
-  
+
   // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
-  load_tr(7*8); 
+  load_tr(7 * 8);
   // 让CPU跳转到下标为8的描述符所指向的内存
   taskswitch8();
-  
+
   unsigned char *p = intToHexStr(tss_a.eflags);
-  showString(shtctl, sht_back, 0,0, COL8_FFFFFF, p);
-  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
-     
+  showString(shtctl, sht_back, 0, 0, COL8_FFFFFF, p);
+  drawStringOnSheet(sht_back, 0, 0, COL8_FFFFFF, COL8_000000, p, 10);
+
   p = intToHexStr(tss_a.esp);
-  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
-  
-  p = intToHexStr(tss_a.es/ 8);
-  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  drawStringOnSheet(sht_back, 0, 0, COL8_FFFFFF, COL8_000000, p, 10);
+
+  p = intToHexStr(tss_a.es / 8);
+  drawStringOnSheet(sht_back, 0, 0, COL8_FFFFFF, COL8_000000, p, 10);
 
   int data = 0;
   for (;;)
@@ -248,11 +248,42 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
   return;
 }
 
-void task_b_main(void)
+void task_b_main(struct SHTCTL *shtctl, struct SHEET *sht_back)
 {
-	for (;;) { io_hlt(); }
-}
+  showString(shtctl, sht_back, 0, 144, COL8_FFFFFF, "enter task b");
 
+  struct FIFO8 timerinfo_b;
+  char timerbuf_b[8];
+  struct TIMER *timer_b = 0;
+
+  int i = 0;
+
+  fifo8_init(&timerinfo_b, 8, timerbuf_b);
+  timer_b = timer_alloc();
+  timer_init(timer_b, &timerinfo_b, 123);
+
+  timer_settime(timer_b, 500);
+
+  for (;;)
+  {
+
+    io_cli();
+    if (fifo8_status(&timerinfo_b) == 0)
+    {
+      io_sti();
+    }
+    else
+    {
+      i = fifo8_get(&timerinfo_b);
+      io_sti();
+      if (i == 123)
+      {
+        showString(shtctl, sht_back, 0, 160, COL8_FFFFFF, "switch back");
+        taskswitch7();
+      }
+    }
+  }
+}
 
 #include "string.c"
 #include "graphics.c"
