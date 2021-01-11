@@ -5,14 +5,14 @@ jmp   LABEL_BEGIN
 
 [SECTION .gdt]
 ;                                  段基址          段界限                属性
-LABEL_GDT:          Descriptor        0,            0,                   0  
-LABEL_DESC_CODE32:  Descriptor        0,      SegCode32Len - 1,       DA_C + DA_32
-LABEL_DESC_VIDEO:   Descriptor        0B8000h,         0ffffh,            DA_DRW
-LABEL_DESC_VRAM:    Descriptor        0,         0ffffffffh,            DA_DRW
-LABEL_DESC_STACK:   Descriptor        0,             TopOfStack,        DA_DRWA+DA_32
+LABEL_GDT:          Descriptor        0,       0,                 0  
+LABEL_DESC_CODE32:  Descriptor        0,       SegCode32Len - 1,  DA_C + DA_32
+LABEL_DESC_VIDEO:   Descriptor        0B8000h, 0ffffh,            DA_DRW
+LABEL_DESC_VRAM:    Descriptor        0,       0ffffffffh,        DA_DRW
+LABEL_DESC_STACK:   Descriptor        0,       LenOfStackSection, DA_DRWA+DA_32
 
 ; For TSS
-LABEL_DESC_6:       Descriptor        0,      0fffffh,       0409Ah
+LABEL_DESC_6:       Descriptor        0,      0fffffh, 0409Ah
 
 LABEL_DESC_7:       Descriptor        0,      0,       0
 
@@ -191,7 +191,7 @@ LABEL_SEG_CODE32:
      ;initialize stack for c code
      mov  ax, SelectorStack
      mov  ss, ax
-     mov  esp, TopOfStack
+     mov  esp, TopOfStack1
 
      mov  ax, SelectorVram
      mov  ds,  ax
@@ -355,6 +355,9 @@ taskswitch9:
      jmp 9*8:0
      ret
 
+farjmp:
+     jmp FAR [esp + 4]
+     ret
 
 
 SegCode32Len   equ  $ - LABEL_SEG_CODE32

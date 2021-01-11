@@ -25,7 +25,8 @@ void io_store_eflags(int eflags);
 void load_tr(int);
 void taskswitch8(void);
 int get_code32_addr();
-
+int get_code32_addr();
+void farjmp(int, int);
 /*
   String utility
 */
@@ -270,4 +271,10 @@ struct SEGMENT_DESCRIPTOR {
 void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
 
 #define AR_TSS32        0x0089
+
+void mt_init();
+
+static struct TIMER *mt_timer;
+
+void mt_taskswitch();
 #endif

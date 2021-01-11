@@ -4,6 +4,7 @@
 #define TIMER_FLAGS_USING 2
 
 static struct TIMERCTL timerctl;
+extern struct TIMER *mt_timer;
 
 void init_pit(void)
 {
@@ -60,6 +61,7 @@ void intHandler20(char *esp)
   io_out8(PIC0_OCW2, 0x60);
 
   timerctl.count++;
+  char ts = 0;
   int i;
   for (i = 0; i < MAX_TIMER; i++)
   {
@@ -70,6 +72,13 @@ void intHandler20(char *esp)
       {
         timerctl.timer[i].flags = TIMER_FLAGS_ALLOC;
         fifo8_put(timerctl.timer[i].fifo, timerctl.timer[i].data);
+        // 超时的时钟是否是mt_timer
+        if (&timerctl.timer[i] == mt_timer) {
+            ts = 1;
+        }
+      }
+      if (ts != 0) {
+        mt_taskswitch();
       }
     }
   }
