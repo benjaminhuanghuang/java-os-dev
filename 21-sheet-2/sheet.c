@@ -20,6 +20,7 @@ struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram,
 	for (i = 0; i < MAX_SHEETS; i++)
 	{
 		ctl->sheets0[i].flags = 0;
+		ctl->sheets0[i].ctl = ctl; 
 	}
 
 	return ctl;

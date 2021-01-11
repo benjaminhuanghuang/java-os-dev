@@ -1,6 +1,8 @@
 #include "os.h"
 void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
+void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned char *s, int l);
 
+// the scean code when key pressed
 static char keytable[0x54] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,
     'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0, 0, 'A', 'S',
@@ -71,7 +73,7 @@ void CMain(void)
   sheet_setbuf(sht_win, buf_win, 160, 52, -1);
   static unsigned char win_title[11] = "Hello OS";
   draw_window(buf_win, 160, 52, win_title);
-  make_textbox8(sht_win, 8, 28, 128, 16, COL8_FFFFFF);
+  make_textbox8(sht_win, 8, 28, 144, 16, COL8_FFFFFF);
   sheet_slide(shtctl, sht_win, 80, 72);
 
   //  Set sheets order
@@ -81,9 +83,9 @@ void CMain(void)
 
   sheet_refresh(shtctl, sht_back, 0, 0, 320, 48);
   //-- Timer
-  struct TIMER *timer, *timer2, *timer3;
-  static struct FIFO8 timerfifo, timerfifo2, timerfifo3;
-  static unsigned char timerbuf[8], timerbuf2[8], timerbuf3[8];
+  struct TIMER *timer;
+  static struct FIFO8 timerfifo;
+  static unsigned char timerbuf[8];
   init_pit();
 
   fifo8_init(&timerfifo, 8, timerbuf);
@@ -98,7 +100,7 @@ void CMain(void)
     io_cli();
     if (fifo8_status(&keyfifo)         //
             + fifo8_status(&mousefifo) // mouse
-            + fifo8_status(&timerfifo) + fifo8_status(&timerfifo2) + fifo8_status(&timerfifo3) ==
+            + fifo8_status(&timerfifo) ==
         0)
     {
       io_stihlt();
@@ -106,19 +108,28 @@ void CMain(void)
     else if (fifo8_status(&keyfifo) != 0)
     {
       data = fifo8_get(&keyfifo);
-      if (keytable[data] != 0)
+      io_sti();
+      if (data < 0x54 && keytable[data] != 0 && cursor_x < 144)
       {
-        strBuffer[0] = keytable[data];
-        strBuffer[1] = 0;
         boxfill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cursor_x, 28, cursor_x + 7, 43);
         sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
 
-        showString(shtctl, sht_win, cursor_x, 28, COL8_000000, strBuffer);
+        strBuffer[0] = keytable[data];
+        strBuffer[1] = 0;
+        // draw timer count the messagebox
+        drawStringOnSheet(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, strBuffer, 1);
         cursor_x += 8;
-        boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
-        sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
       }
-      io_sti();
+      else if (data == 0x0e)
+      {
+        strBuffer[0] = ' ';
+        strBuffer[1] = 0;
+        // draw timer count the messagebox
+        drawStringOnSheet(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, strBuffer, 1);
+        cursor_x -= 8;
+      }
+      boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+      sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
     }
     else if (fifo8_status(&mousefifo) != 0)
     {
@@ -146,7 +157,8 @@ void CMain(void)
           my = binfo->screenY - 16;
         }
         sheet_slide(shtctl, sht_mouse, mx, my);
-        if ((mdec.btn & 0x01) != 0)
+
+        if ((mdec.btn & 0x01) != 0) // left button is pressed
         {
           sheet_slide(shtctl, sht_win, mx - 80, my - 8);
         }
@@ -159,17 +171,17 @@ void CMain(void)
 
       if (data != 0)
       {
-        timer_init(timer, &timerfifo, 0); /* 次は0を */
+        timer_init(timer, &timerfifo, 0);
         cursor_c = COL8_000000;
       }
       else
       {
-        timer_init(timer, &timerfifo, 1); /* 次は1を */
+        timer_init(timer, &timerfifo, 1);
         cursor_c = COL8_FFFFFF;
       }
-     	timer_settime(timer, 50);
-			boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
-			sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
+      timer_settime(timer, 50);
+      boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+      sheet_refresh(shtctl, sht_win, cursor_x, 28, cursor_x + 8, 44);
       io_sti();
     }
   }
@@ -194,6 +206,14 @@ void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c)
   boxfill8(sht->buf, sht->bxsize, COL8_C6C6C6, x0 - 2, y1 + 1, x1 + 0, y1 + 1);
   boxfill8(sht->buf, sht->bxsize, COL8_C6C6C6, x1 + 1, y0 - 2, x1 + 1, y1 + 1);
   boxfill8(sht->buf, sht->bxsize, c, x0 - 1, y0 - 1, x1 + 0, y1 + 0);
+  return;
+}
+
+void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned char *s, int l)
+{
+  boxfill8(sht->buf, sht->bxsize, b, x, y, x + l * 8 - 1, y + 15);
+  showString(sht->buf, sht->bxsize, x, y, c, s);
+  sheet_refresh(sht->ctl, sht, x, y, x + l * 8, y + 16);
   return;
 }
 
