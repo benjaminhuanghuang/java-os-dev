@@ -19,6 +19,10 @@ static struct MEMMAN *memman = (struct MEMMAN *)0x100000;
 
 #define COLOR_INVISIBLE 99
 
+static struct SHTCTL *shtctl;
+static struct SHEET *sht_back;
+static unsigned char *buf_back;
+
 void CMain(void)
 {
   //struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
@@ -110,20 +114,20 @@ void CMain(void)
   set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
   set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
   
-  // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
-  load_tr(7*8); 
-  // 让CPU跳转到下标为8的描述符所指向的内存
-  taskswitch8();
+  // // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
+  // load_tr(7*8); 
+  // // 让CPU跳转到下标为8的描述符所指向的内存
+  // taskswitch8();
   
-  unsigned char *p = intToHexStr(tss_a.eflags);
-  showString(shtctl, sht_back, 0,0, COL8_FFFFFF, p);
-  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  // unsigned char *p = intToHexStr(tss_a.eflags);
+  // showString(shtctl, sht_back, 0,0, COL8_FFFFFF, p);
+  // drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
      
-  p = intToHexStr(tss_a.esp);
-  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  // p = intToHexStr(tss_a.esp);
+  // drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
   
-  p = intToHexStr(tss_a.es/ 8);
-  drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  // p = intToHexStr(tss_a.es/ 8);
+  // drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
 
   int data = 0;
   for (;;)
@@ -197,7 +201,7 @@ void CMain(void)
     }
     else if (fifo8_status(&timerfifo) != 0)
     {
-      // Timer done
+      // Timer for the input cursor done
       int data = fifo8_get(&timerfifo);
 
       if (data != 0)
@@ -250,7 +254,9 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
 
 void task_b_main(void)
 {
-	for (;;) { io_hlt(); }
+	strBuffer[0] = 'B';
+  strBuffer[1] = 0;
+  drawStringOnSheet(sht_back, 0, 48, COL8_FFFFFF, COL8_008484, strBuffer, 2);
 }
 
 
