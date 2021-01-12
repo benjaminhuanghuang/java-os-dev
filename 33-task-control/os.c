@@ -1,7 +1,7 @@
 #include "os.h"
 void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned char *s, int l);
-void task_b_main(void);
+void task_b_main(struct SHEET *sht_back);
 
 void initBootInfo(struct BOOTINFO *pBootInfo);
 static unsigned char strBuffer[10];
@@ -9,10 +9,6 @@ static unsigned char strBuffer[10];
 static struct MEMMAN *memman = (struct MEMMAN *)0x100000;
 
 #define COLOR_INVISIBLE 99
-
-static struct SHTCTL *shtctl;
-static struct SHEET *sht_back;
-static unsigned char *buf_back;
 
 void CMain(void)
 {
@@ -30,7 +26,9 @@ void CMain(void)
   */
   memman_free(memman, 0x00108000, 0x3FEE8000);
   init_palette();
-
+  struct SHTCTL *shtctl;
+  struct SHEET *sht_back;
+  unsigned char *buf_back;
   // Setup sheets
   shtctl = shtctl_init(memman, binfo->vgaRam, binfo->screenX, binfo->screenY);
 
@@ -47,8 +45,8 @@ void CMain(void)
 
   //-- Timer
   struct TIMER *timer;
-  static struct FIFO8 timerfifo;
-  static unsigned char timerbuf[8];
+  struct FIFO8 timerfifo;
+  unsigned char timerbuf[8];
   init_pit();
 
   fifo8_init(&timerfifo, 8, timerbuf);
@@ -66,18 +64,19 @@ void CMain(void)
 
   task_a = task_init(memman);
   task_b = task_alloc();
+  task_b->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
   task_b->tss.ldtr = 0;
   task_b->tss.iomap = 0x40000000;
-  task_b->tss.eip = (int)(task_b_main - addr_code32);
+  task_b->tss.eip =  (int)(task_b_main - addr_code32);
   task_b->tss.es = 0;
-  task_b->tss.cs = 1 * 8;
-  task_b->tss.ss = 4 * 8;
-  task_b->tss.ds = 3 * 8;
+  task_b->tss.cs = 1*8;//6 * 8;
+  task_b->tss.ss = 4*8;
+  task_b->tss.ds = 3*8;
   task_b->tss.fs = 0;
-  task_b->tss.gs = 2 * 8;
-  
+  task_b->tss.gs = 2*8;
   task_run(task_b);
-  
+  *((int *) (task_b->tss.esp + 4)) = (int) sht_back;
+
   int data = 0;
   int pos = 8;
 
@@ -123,11 +122,11 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
   return;
 }
 
-void task_b_main()
+void task_b_main(struct SHEET *sht_back)
 {
-  static struct FIFO8 timerinfo_b;
-  static unsigned char timerbuf_b[8];
-  static struct TIMER *timer_b = 0;
+  struct FIFO8 timerinfo_b;
+  unsigned char timerbuf_b[8];
+  struct TIMER *timer_b = 0;
   int i = 0;
 
   fifo8_init(&timerinfo_b, 8, timerbuf_b);
@@ -136,8 +135,10 @@ void task_b_main()
 
   timer_settime(timer_b, 100);
   int pos = 0;
-  struct SHEET *sht_back;  
-  sht_back = (struct SHEET *) *((int *) 0x0fec);  
+  unsigned char strBuffer[2];
+  strBuffer[0] = 'B';
+  strBuffer[1] = 0;
+  drawStringOnSheet(sht_back, 0, 48, COL8_FFFFFF, COL8_008484, strBuffer, 2);
   for (;;)
   {
     io_cli();
@@ -151,6 +152,7 @@ void task_b_main()
       io_sti();
       if (i == 123)
       {
+        unsigned char strBuffer[2];
         strBuffer[0] = 'B';
         strBuffer[1] = 0;
         drawStringOnSheet(sht_back, 0, 48, COL8_FFFFFF, COL8_008484, strBuffer, 2);

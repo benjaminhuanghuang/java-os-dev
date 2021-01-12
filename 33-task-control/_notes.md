@@ -6,10 +6,10 @@
 https://www.bilibili.com/video/BV1hJ411n7rs?p=33
 
 
-添加进程控制模块
+## TASK and TASKCTL
 TASK 结构体用来表示一个进程，其中的sel表示该进程的TSS32结构所对应的段描述符下标，flag用来表示当前任务状态，例如是空闲还是占用。
 
-TASKCTL 是任务控制器，它包含了TASK数组，也就是TASKCTL是一组进程的集合，runnging表示当前有多少个正在运行的进程，now表示下一个将被切换到前台的进程编号。
+TASKCTL 是任务控制器，它包含了TASK数组，TASKCTL可视为一组进程的集合，runnging表示当前有多少个正在运行的进程，now表示下一个将被切换到前台的进程编号。
 
 ```
 struct TASK {
