@@ -10,6 +10,7 @@ LABEL_DESC_CODE32:  Descriptor        0,       SegCode32Len - 1,  DA_C + DA_32
 LABEL_DESC_VIDEO:   Descriptor        0B8000h, 0ffffh,            DA_DRW
 LABEL_DESC_VRAM:    Descriptor        0,       0ffffffffh,        DA_DRW
 LABEL_DESC_STACK:   Descriptor        0,       LenOfStackSection, DA_DRWA+DA_32
+LABEL_DESC_STACK2:  Descriptor        0,       LenOfStackSection, DA_DRWA+DA_32
 
 ; For TSS
 LABEL_DESC_6:       Descriptor        0,      0ffffh, 0409Ah
@@ -134,7 +135,7 @@ LABEL_MEM_CHK_OK:
      or    eax , 1
      mov   cr0, eax
 
-     jmp   dword  SelectorCode32: 0
+     jmp   dword  1*8: 0
 
 init8259A:
      mov  al, 011h
@@ -337,22 +338,6 @@ get_code32_addr:
 
 load_tr:
      LTR  [esp + 4]
-     ret
-
-taskswitch8:
-     jmp 8*8:0
-     ret
-
-taskswitch7:
-     jmp 7*8:0
-     ret
-
-taskswitch6:
-     jmp 6*8:0
-     ret
-
-taskswitch9:
-     jmp 9*8:0
      ret
 
 farjmp:

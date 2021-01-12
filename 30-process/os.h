@@ -23,8 +23,10 @@ int io_in8(int port);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 void load_tr(int);
-void taskswitch8(void);
+void taskswitch5(void);
+void taskswitch6(void);
 int get_code32_addr();
+int get_addr_gdt();
 
 /*
   String utility

@@ -74,27 +74,26 @@ void CMain(void)
   set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
   set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
 
-  // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
   load_tr(7 * 8);
-  taskswitch8();
-  
-  tss_b.eip = (task_b_main - addr_code32);
-  tss_b.eflags = 0x00000202;
-  tss_b.eax = 0;
-  tss_b.ecx = 0;
-  tss_b.edx = 0;
-  tss_b.ebx = 0;
-  tss_b.esp = 1024; //tss_a.esp;
-  tss_b.ebp = 0;
-  tss_b.esi = 0;
-  tss_b.edi = 0;
-  tss_b.es = tss_a.es;
-  tss_b.cs = tss_a.cs; //6 * 8;
-  tss_b.ss = tss_a.ss;
-  tss_b.ds = tss_a.ds;
-  tss_b.fs = tss_a.fs;
-  tss_b.gs = tss_a.gs;
+  int task_b_esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
+	tss_b.eip = (int) &task_b_main;
+	tss_b.eflags = 0x00000202; /* IF = 1; */
+	tss_b.eax = 0;
+	tss_b.ecx = 0;
+	tss_b.edx = 0;
+	tss_b.ebx = 0;
+	tss_b.esp = task_b_esp;
+	tss_b.ebp = 0;
+	tss_b.esi = 0;
+	tss_b.edi = 0;
+	tss_b.es = 1 * 8;
+	tss_b.cs = 2 * 8;
+	tss_b.ss = 1 * 8;
+	tss_b.ds = 1 * 8;
+	tss_b.fs = 1 * 8;
+	tss_b.gs = 1 * 8;
 
+  *((int *) 0x0fec) = (int) sht_back;
 
   int data = 0;
   int pos = 8;
@@ -143,10 +142,9 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
 
 void task_b_main()
 {
-  struct FIFO8 timerinfo_b;
+  static struct FIFO8 timerinfo_b;
   static unsigned char timerbuf_b[8];
   static struct TIMER *timer_b = 0;
-
   int i = 0;
 
   fifo8_init(&timerinfo_b, 8, timerbuf_b);
@@ -155,9 +153,10 @@ void task_b_main()
 
   timer_settime(timer_b, 100);
   int pos = 0;
+  struct SHEET *sht_back;  
+  sht_back = (struct SHEET *) *((int *) 0x0fec);  
   for (;;)
   {
-
     io_cli();
     if (fifo8_status(&timerinfo_b) == 0)
     {

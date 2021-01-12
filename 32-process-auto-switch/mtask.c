@@ -22,11 +22,11 @@ void mt_init(void)
 {
     mt_timer = timer_alloc();
 
-    timer_settime(mt_timer, 500);
+    timer_settime(mt_timer, 300);
     mt_tr = 7 * 8;
     return;
 }
-// 7 <-> 9
+
 void mt_taskswitch()
 {
     if (mt_tr == 7 * 8)
@@ -38,7 +38,7 @@ void mt_taskswitch()
         mt_tr = 7 * 8;
     }
 
-    timer_settime(mt_timer, 100);
+    timer_settime(mt_timer, 300);
     farjmp(0, mt_tr);
     return;
 }

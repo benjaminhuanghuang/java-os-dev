@@ -12,10 +12,8 @@ LABEL_DESC_VRAM:    Descriptor        0,       0ffffffffh,        DA_DRW
 LABEL_DESC_STACK:   Descriptor        0,       TopOfStack,        DA_DRWA+DA_32
 
 ; For TSS
-LABEL_DESC_5:       Descriptor        0,      0fffffh,       0409Ah
+LABEL_DESC_5:       Descriptor        0,      0,       0
 LABEL_DESC_6:       Descriptor        0,      0,       0
-LABEL_DESC_7:       Descriptor        0,      0,       0
-LABEL_DESC_8:       Descriptor        0,      0,       0
 
 GdtLen     equ    $ - LABEL_GDT
 GdtPtr     dw     GdtLen - 1
@@ -335,12 +333,12 @@ load_tr:
      LTR  [esp + 4]
      ret
 
-taskswitch7:
-     jmp 7*8:0
+taskswitch5:
+     jmp dword 5*8:0
      ret
 
 taskswitch6:
-     jmp 6*8:0
+     jmp dword 6*8:0
      ret
 
 %include "fontData.inc"

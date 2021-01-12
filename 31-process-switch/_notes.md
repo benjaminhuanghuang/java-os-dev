@@ -28,4 +28,4 @@ https://www.bilibili.com/video/BV1hJ411n7rs?p=31
     tss_b.gs = tss_a.gs;
 ```
 
-在 ams 代码中
+“JMP FAR”指令的功能是执行far跳转。在JMP FAR指令中，可以指定一个内存地址，CPU会从指定的内存地址中读取4个字节的数据，并将其存入EIP寄存器，再继续读取2个字节的数据，并将其存入CS寄存器。当我们调用这个函数，比如farjmp(eip, cs);，在[ESP+4]这个位置就存放了eip的值，而[ESP+8]则存放了cs的值，这样就可以实现far跳转了。
