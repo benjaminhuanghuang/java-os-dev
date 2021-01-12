@@ -56,45 +56,28 @@ void CMain(void)
   timer_init(timer, &timerfifo, 1);
   timer_settime(timer, 100); // 1s
 
-  //-- Timer for task switching
-  mt_init();
-
   //-- switch task
   int addr_code32 = get_code32_addr(); // ASM code
   struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)get_addr_gdt();
 
-  static struct TSS32 tss_b, tss_a;
-  tss_a.ldtr = 0;
-  tss_a.iomap = 0x40000000;
-  tss_b.ldtr = 0;
-  tss_b.iomap = 0x40000000;
+  static struct TSS32 tss_a;
+  static struct TASK *task_a;
+  static struct TASK *task_b;
 
-  set_segmdesc(gdt + 7, 103, (int)&tss_a, AR_TSS32);
-  set_segmdesc(gdt + 8, 103, (int)&tss_a, AR_TSS32);
-  set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
-  set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
-
-  load_tr(7 * 8);
-  int task_b_esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
-	tss_b.eip = (int) &task_b_main;
-	tss_b.eflags = 0x00000202; /* IF = 1; */
-	tss_b.eax = 0;
-	tss_b.ecx = 0;
-	tss_b.edx = 0;
-	tss_b.ebx = 0;
-	tss_b.esp = task_b_esp;
-	tss_b.ebp = 0;
-	tss_b.esi = 0;
-	tss_b.edi = 0;
-	tss_b.es = 1 * 8;
-	tss_b.cs = 2 * 8;
-	tss_b.ss = 1 * 8;
-	tss_b.ds = 1 * 8;
-	tss_b.fs = 1 * 8;
-	tss_b.gs = 1 * 8;
-
-  *((int *) 0x0fec) = (int) sht_back;
-
+  task_a = task_init(memman);
+  task_b = task_alloc();
+  task_b->tss.ldtr = 0;
+  task_b->tss.iomap = 0x40000000;
+  task_b->tss.eip = (int)(task_b_main - addr_code32);
+  task_b->tss.es = 0;
+  task_b->tss.cs = 1 * 8;
+  task_b->tss.ss = 4 * 8;
+  task_b->tss.ds = 3 * 8;
+  task_b->tss.fs = 0;
+  task_b->tss.gs = 2 * 8;
+  
+  task_run(task_b);
+  
   int data = 0;
   int pos = 8;
 

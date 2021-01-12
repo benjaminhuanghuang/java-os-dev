@@ -1,7 +1,5 @@
 #include "os.h"
 
-static struct TIMER *task_timer;
-static struct TASKCTL *taskctl;
 
 struct TASK  *task_init(struct MEMMAN *memman) {
     int  i;

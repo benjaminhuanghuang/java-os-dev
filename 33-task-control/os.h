@@ -287,6 +287,10 @@ struct TASKCTL {
     struct TASK  *tasks[MAX_TASKS];
     struct TASK tasks0[MAX_TASKS];
 };
+
+static struct TIMER *task_timer;
+static struct TASKCTL *taskctl;
+
 /*
   task_init主要是初始化任务控制器对象，同时创建一个时钟，用于进程调度，同时为每个任务分配一个全局描述符，这个描述符指向该任务所对应的TSS32结构，并且将第一个任务的TSS32加载进CPU.
 */
@@ -294,5 +298,7 @@ struct TASK *task_init(struct MEMMAN *memman);
 
 #define SIZE_OF_TASKCTL (4 + 4 + 4*MAX_TASKS +  SIZE_OF_TASK *MAX_TASKS)
 struct TASK *task_alloc(void);
+void task_switch(void);
+void task_run(struct TASK *task);
 
 #endif
