@@ -6,4 +6,11 @@
 https://www.bilibili.com/video/BV1hJ411n7rs?p=38
 
 
-# Draw console, add a task for console
+## Add funciton
+```
+  int key_to = 0;
+
+
+  make_wtitle8(shtctl, shtMsgBox,  "task_a",1);
+```                   
+    
