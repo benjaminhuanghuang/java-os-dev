@@ -103,31 +103,28 @@ void CMain(void)
   int addr_code32 = get_code32_addr();  // ASM code
   struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)get_addr_gdt();
 
-  static struct TSS32 tss_b, tss_a;
+  static struct TSS32 tss_a;
   tss_a.ldtr = 0;
   tss_a.iomap = 0x40000000;
-  tss_b.ldtr = 0;
-  tss_b.iomap = 0x40000000;
+
 
   set_segmdesc(gdt + 7, 103, (int)&tss_a, AR_TSS32);
   set_segmdesc(gdt + 8, 103, (int)&tss_a, AR_TSS32);
-  set_segmdesc(gdt + 9, 103, (int)&tss_b, AR_TSS32);
-  set_segmdesc(gdt + 6, 0xffff, (int)&task_b_main, 0x409a); // 0x409a executable
   
-  // // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
-  // load_tr(7*8); 
-  // // 让CPU跳转到下标为8的描述符所指向的内存
-  // taskswitch8();
+  // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
+  load_tr(7*8); 
+  // 让CPU跳转到下标为8的描述符所指向  的内存
+  // 把当前进程信息写入下标为8的描述符，tss_a
+  //taskswitch8();
   
-  // unsigned char *p = intToHexStr(tss_a.eflags);
-  // showString(shtctl, sht_back, 0,0, COL8_FFFFFF, p);
-  // drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  unsigned char *p = intToHexStr(tss_a.eflags);
+  drawStringOnSheet(sht_back, 0, 0, COL8_FFFFFF, COL8_008484, p, 10);
      
-  // p = intToHexStr(tss_a.esp);
-  // drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  p = intToHexStr(tss_a.esp);
+  drawStringOnSheet(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, p, 10);
   
-  // p = intToHexStr(tss_a.es/ 8);
-  // drawStringOnSheet(sht_back, 0,0, COL8_FFFFFF, COL8_000000, p, 10);
+  p = intToHexStr(tss_a.es/ 8);
+  drawStringOnSheet(sht_back, 0, 32, COL8_FFFFFF, COL8_008484, p, 10);
 
   int data = 0;
   for (;;)
@@ -254,9 +251,6 @@ void drawStringOnSheet(struct SHEET *sht, int x, int y, int c, int b, unsigned c
 
 void task_b_main(void)
 {
-	strBuffer[0] = 'B';
-  strBuffer[1] = 0;
-  drawStringOnSheet(sht_back, 0, 48, COL8_FFFFFF, COL8_008484, strBuffer, 2);
 }
 
 

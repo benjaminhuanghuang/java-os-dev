@@ -76,7 +76,7 @@ void CMain(void)
 
   // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
   load_tr(7 * 8);
-  taskswitch7();
+  taskswitch8();
   
   tss_b.eip = (task_b_main - addr_code32);
   tss_b.eflags = 0x00000202;

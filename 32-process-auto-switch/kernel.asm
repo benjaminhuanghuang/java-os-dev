@@ -12,7 +12,7 @@ LABEL_DESC_VRAM:    Descriptor        0,       0ffffffffh,        DA_DRW
 LABEL_DESC_STACK:   Descriptor        0,       LenOfStackSection, DA_DRWA+DA_32
 
 ; For TSS
-LABEL_DESC_6:       Descriptor        0,      0fffffh, 0409Ah
+LABEL_DESC_6:       Descriptor        0,      0ffffh, 0409Ah
 
 LABEL_DESC_7:       Descriptor        0,      0,       0
 
