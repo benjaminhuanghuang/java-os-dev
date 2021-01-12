@@ -103,19 +103,23 @@ void CMain(void)
   int addr_code32 = get_code32_addr();  // ASM code
   struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)get_addr_gdt();
 
-  static struct TSS32 tss_a;
+  static struct TSS32 tss_a, tss_b;
   tss_a.ldtr = 0;
   tss_a.iomap = 0x40000000;
+  tss_b.ldtr = 0;
+  tss_b.iomap = 0x40000000;
 
 
+  set_segmdesc(gdt + 5, 0xffff, task_b_main, 0x409a);
+  set_segmdesc(gdt + 6, 103, (int)&tss_a, AR_TSS32);
   set_segmdesc(gdt + 7, 103, (int)&tss_a, AR_TSS32);
-  set_segmdesc(gdt + 8, 103, (int)&tss_a, AR_TSS32);
+  set_segmdesc(gdt + 8, 103, (int)&tss_b, AR_TSS32);
   
-  // 描述符LABEL_DESC_7通过ltr指令加载到CPU中
-  load_tr(7*8); 
-  // 让CPU跳转到下标为8的描述符所指向  的内存
+  // 描述符LABEL_DESC_6通过ltr指令加载到CPU中
+  load_tr(6*8); 
+  // 让CPU跳转到下标为7的描述符所指向的内存
   // 把当前进程信息写入下标为8的描述符，tss_a
-  //taskswitch8();
+  taskswitch7();
   
   unsigned char *p = intToHexStr(tss_a.eflags);
   drawStringOnSheet(sht_back, 0, 0, COL8_FFFFFF, COL8_008484, p, 10);
