@@ -1,4 +1,4 @@
-IMAGE_NAME  = myos35.img
+IMAGE_NAME  = myos38.img
 BOOT_NAME  = boot.bin
 KERNEL_NAME  = kernel.bin
 
