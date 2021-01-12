@@ -1,6 +1,6 @@
 
 # Hello OS
-[进程的挂起和恢复](https://blog.csdn.net/tyler_download/article/details/54406141)
+[实现进程优先级](https://blog.csdn.net/tyler_download/article/details/54406141)
 
 
 https://www.bilibili.com/video/BV1hJ411n7rs?p=36
